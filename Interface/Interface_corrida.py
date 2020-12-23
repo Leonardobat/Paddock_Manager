@@ -1,38 +1,24 @@
-#! /bin/env/python
 # -*- coding: utf-8 -*-
 
-import sys, time
-from Corrida import Racing
-from PySide2.QtCore import Qt, Slot
-from PySide2.QtGui import QPainter, QColor
-from PySide2.QtWidgets import (
-    QAction,
-    QApplication,
-    QHeaderView,
-    QHBoxLayout,
-    QLabel,
-    QAbstractItemView,
-    QMainWindow,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QWidget,
-    QProgressBar,
-    QSizePolicy,
-    QFrame,
-    QGridLayout,
-)
+from time import sleep
+from Corrida.motor_corrida import Racing_Engine
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QPainter, QColor
+from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
+                               QAbstractItemView, QMainWindow, QPushButton,
+                               QTableWidget, QTableWidgetItem, QVBoxLayout,
+                               QWidget, QProgressBar, QSizePolicy, QFrame,
+                               QGridLayout)
 
 
-class Widget(QWidget):
+class Interface_Corrida(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.items = 0
         self.pilots = []
         self.play_race = True
 
-        # Example data
+        # Test data
         self.dict_race = {
             "Vettel": {
                 "Total Time": 0,
@@ -41,7 +27,7 @@ class Widget(QWidget):
                 "Car Health": 100,
                 "Pit-Stops": 0,
             },
-            "L. Halmilton": {
+            "L. Hamilton": {
                 "Total Time": 0,
                 "Pit-Stop": False,
                 "Tires": 10,
@@ -80,7 +66,7 @@ class Widget(QWidget):
                 "Team": "Ferrari",
                 "Owner": "IA",
             },
-            "L. Halmilton": {
+            "L. Hamilton": {
                 "Technique": 10,
                 "Smoothness": 10,
                 "Rhythm": 10,
@@ -149,23 +135,25 @@ class Widget(QWidget):
         self.pilot1_name.setAlignment(Qt.AlignCenter)
         self.pilot1_label_tire = QLabel("Tires:")
         self.pilot1_tire_bar = QProgressBar()
-        self.pilot1_tire_bar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.pilot1_tire_bar.setSizePolicy(QSizePolicy.Preferred,
+                                           QSizePolicy.Minimum)
         self.pilot1_tire_bar.setRange(0, 100)
-        self.pilot1_tire_bar.setValue(self.dict_race[self.pilots[0]]["Tires"] * 10)
-        self.pilot1_label_pitstops = QLabel(
-            "Pitstops: {0}".format(self.dict_race[self.pilots[0]]["Pit-Stops"])
-        )
+        self.pilot1_tire_bar.setValue(self.dict_race[self.pilots[0]]["Tires"] *
+                                      10)
+        self.pilot1_label_pitstops = QLabel("Pitstops: {0}".format(
+            self.dict_race[self.pilots[0]]["Pit-Stops"]))
 
         self.pilot2_name = QLabel(self.pilots[1])
         self.pilot2_name.setAlignment(Qt.AlignCenter)
         self.pilot2_label_tire = QLabel("Tires:")
         self.pilot2_tire_bar = QProgressBar()
-        self.pilot2_tire_bar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.pilot2_tire_bar.setSizePolicy(QSizePolicy.Preferred,
+                                           QSizePolicy.Minimum)
         self.pilot2_tire_bar.setRange(0, 100)
-        self.pilot2_tire_bar.setValue(self.dict_race[self.pilots[1]]["Tires"] * 10)
-        self.pilot2_label_pitstops = QLabel(
-            "Pitstops: {0}".format(self.dict_race[self.pilots[1]]["Pit-Stops"])
-        )
+        self.pilot2_tire_bar.setValue(self.dict_race[self.pilots[1]]["Tires"] *
+                                      10)
+        self.pilot2_label_pitstops = QLabel("Pitstops: {0}".format(
+            self.dict_race[self.pilots[1]]["Pit-Stops"]))
 
         # Right
         self.restart_button = QPushButton("Restart")
@@ -186,12 +174,13 @@ class Widget(QWidget):
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.NoSelection)
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Pilot", "Team", "Lap Time", "Gap"])
+        self.table.setHorizontalHeaderLabels(
+            ["Pilot", "Team", "Lap Time", "Gap"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.run = QPushButton("Run")
         self.run.setAutoRepeat(True)
 
-        # QWidget Layout
+        # Layout
         self.layout = QGridLayout()
         self.pilots_layout = QVBoxLayout()
         self.pilot1_layout = QGridLayout()
@@ -202,7 +191,7 @@ class Widget(QWidget):
         self.label_info.setAlignment(Qt.AlignCenter)
         self.label_info.setFrameShape(QFrame.Panel)
 
-        # QWidget Pilots Info Layout
+        # Pilots Info Layout
 
         self.box_line1 = QFrame()
         self.box_line1.setFrameShape(QFrame.StyledPanel)
@@ -226,7 +215,7 @@ class Widget(QWidget):
         self.pilots_layout.addSpacing(5)
         self.pilots_layout.addWidget(self.pit_button, 0)
 
-        # QWidget Right Layout
+        # Right Layout
         self.right_layout.addSpacing(25)
         self.right_layout.addWidget(self.restart_button)
         self.right_layout.addSpacing(10)
@@ -235,7 +224,7 @@ class Widget(QWidget):
         self.right_layout.addWidget(self.play_button, 1)
         # self.right_layout.addWidget(self.run,1)
 
-        # QWidget Left Layout
+        # Left Layout
         self.left_layout.addWidget(self.label_track)
         self.left_layout.addWidget(self.table)
 
@@ -249,7 +238,7 @@ class Widget(QWidget):
         self.play_button.clicked.connect(self.run_race)
         self.restart_button.clicked.connect(self.restart_race)
         self.pit_button.clicked.connect(self.pit_stop)
-        self.run.pressed.connect(self.race)
+        self.run.pressed.connect(self.update_table)
 
         # Fill example data
         self.fill_table()
@@ -268,7 +257,7 @@ class Widget(QWidget):
                 "Tires": 10,
                 "Car Health": 100,
             },
-            "L. Halmilton": {
+            "L. Hamilton": {
                 "Total Time": 0,
                 "Pit-Stop": False,
                 "Tires": 10,
@@ -308,11 +297,10 @@ class Widget(QWidget):
             self.play_button.setText("Play")
 
     @Slot()
-    def race(self):
+    def update_table(self):
         times_sorted = []
-        times_sorted, self.dict_race = Racing(
-            self.dict_pilot, self.dict_track
-        ).run_a_lap(self.dict_race)
+        times_sorted, self.dict_race = Racing_Engine(
+            self.dict_pilot, self.dict_track).run_a_lap(self.dict_race)
         num_pilots = len(times_sorted)
 
         self.table.setRowCount(0)
@@ -328,7 +316,7 @@ class Widget(QWidget):
             team = self.dict_pilot[pilot_name]["Team"]
             team_item = QTableWidgetItem(team)
             team_item.setTextAlignment(Qt.AlignCenter)
-            team_item.setBackgroundColor(self.dict_teams[team]["Primary"])
+            team_item.setBackground(self.dict_teams[team]["Primary"])
             team_item.setForeground(self.dict_teams[team]["Secondary"])
 
             lap_item = QTableWidgetItem(lap)
@@ -337,11 +325,11 @@ class Widget(QWidget):
             pilot_item.setTextAlignment(Qt.AlignCenter)
 
             if self.items == 0:
-                pilot_item.setBackgroundColor(QColor(255, 215, 0, 127))
+                pilot_item.setBackground(QColor(255, 215, 0, 127))
             elif self.items == 1:
-                pilot_item.setBackgroundColor(QColor(169, 169, 169, 127))
+                pilot_item.setBackground(QColor(169, 169, 169, 127))
             elif self.items == 2:
-                pilot_item.setBackgroundColor(QColor(205, 127, 50, 127))
+                pilot_item.setBackground(QColor(205, 127, 50, 127))
             self.table.insertRow(self.items)
             id_item = QTableWidgetItem("{0}º".format(self.items + 1))
             self.table.setVerticalHeaderItem(self.items, id_item)
@@ -352,7 +340,7 @@ class Widget(QWidget):
             self.items += 1
 
         if self.dict_track["Raced Laps"] < self.dict_track["Total Laps"]:
-            time.sleep(0.1)
+            sleep(0.1)
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
                 self.dict_track["Name"],
@@ -360,14 +348,14 @@ class Widget(QWidget):
                 self.dict_track["Total Laps"],
             )
             self.label_track.setText(text)
-            self.pilot1_tire_bar.setValue(self.dict_race[self.pilots[0]]["Tires"] * 10)
-            self.pilot2_tire_bar.setValue(self.dict_race[self.pilots[1]]["Tires"] * 10)
-            self.pilot1_label_pitstops.setText(
-                "Pitstops: {0}".format(self.dict_race[self.pilots[0]]["Pit-Stops"])
-            )
-            self.pilot2_label_pitstops.setText(
-                "Pitstops: {0}".format(self.dict_race[self.pilots[1]]["Pit-Stops"])
-            )
+            self.pilot1_tire_bar.setValue(
+                self.dict_race[self.pilots[0]]["Tires"] * 10)
+            self.pilot2_tire_bar.setValue(
+                self.dict_race[self.pilots[1]]["Tires"] * 10)
+            self.pilot1_label_pitstops.setText("Pitstops: {0}".format(
+                self.dict_race[self.pilots[0]]["Pit-Stops"]))
+            self.pilot2_label_pitstops.setText("Pitstops: {0}".format(
+                self.dict_race[self.pilots[1]]["Pit-Stops"]))
         else:
             self.run_race()
             self.play_button.setEnabled(False)
@@ -385,7 +373,7 @@ class Widget(QWidget):
             team = self.dict_pilot[key]["Team"]
             team_item = QTableWidgetItem(team)
             team_item.setTextAlignment(Qt.AlignCenter)
-            team_item.setBackgroundColor(self.dict_teams[team]["Primary"])
+            team_item.setBackground(self.dict_teams[team]["Primary"])
             team_item.setForeground(self.dict_teams[team]["Secondary"])
 
             pilot_item = QTableWidgetItem(key)
@@ -398,39 +386,3 @@ class Widget(QWidget):
             self.table.setItem(self.items, 2, lap_item)
             self.table.setItem(self.items, 3, gap_item)
             self.items += 1
-
-
-class MainWindow(QMainWindow):
-    def __init__(self, widget):
-        QMainWindow.__init__(self)
-        self.setWindowTitle("Paddock Manager")
-
-        # Menu
-        self.menu = self.menuBar()
-        self.file_menu = self.menu.addMenu("File")
-
-        # Exit QAction
-        exit_action = QAction("Exit", self)
-        exit_action.setShortcut("Ctrl+Q")
-        exit_action.triggered.connect(self.exit_app)
-
-        self.file_menu.addAction(exit_action)
-        self.setCentralWidget(widget)
-
-    @Slot()
-    def exit_app(self, checked):
-        QApplication.quit()
-
-
-if __name__ == "__main__":
-    # Qt Application
-    app = QApplication(sys.argv)
-    # QWidget
-    widget = Widget()
-    # QMainWindow using QWidget as central widget
-    window = MainWindow(widget)
-    window.resize(800, 600)
-    window.show()
-
-    # Execute application
-    sys.exit(app.exec_())

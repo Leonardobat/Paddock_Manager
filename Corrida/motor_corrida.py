@@ -1,10 +1,9 @@
-#! /bin/env/python
 # -*- coding: utf-8 -*-
 from random import SystemRandom
 from math import sqrt
 
 
-class Racing:
+class Racing_Engine():
     def __init__(self, dict_pilot, dict_track):
         self.times_sorted, self.info = [], []
         self.data, self.stats, self.track = [], dict_pilot, dict_track
@@ -16,7 +15,6 @@ class Racing:
         return (self.info, self.data)
 
     def racing(self):
-
         for pilot_key in self.data.keys():
             old_time = self.data[pilot_key]["Total Time"]
             if self.stats[pilot_key]["Owner"] == "IA":
@@ -46,21 +44,17 @@ class Racing:
                 prey_time, prey_key, prey_lap = self.times_sorted[i - 1]
                 gap = total_time - prey_time
                 if gap < 1:
-                    over_diff = (
-                        7
-                        + self.track["Difficult"]
-                        - (
-                            self.stats[pilot_key]["Technique"]
-                            - self.stats[prey_key]["Technique"]
-                        )
-                    )
+                    over_diff = (7 + self.track["Difficult"] -
+                                 (self.stats[pilot_key]["Technique"] -
+                                  self.stats[prey_key]["Technique"]))
                     lucky = 10 * self.gen.random()
 
                     if lucky > over_diff:
                         prey_lap = prey_lap + 0.3
                         prey_time = total_time + 0.3
                         prey_gap = prey_time - self.times_sorted[0][0]
-                        prey_gap_formated = "+{0}".format(self.time_format(prey_gap))
+                        prey_gap_formated = "+{0}".format(
+                            self.time_format(prey_gap))
                         prey_lap_formated = self.time_format(prey_lap)
                         self.info[i - 1] = [
                             prey_time,
@@ -71,7 +65,8 @@ class Racing:
 
                         leader_gap = total_time - self.times_sorted[0][0]
                         lap_formated = self.time_format(lap)
-                        gap_formated = "+{0}".format(self.time_format(leader_gap))
+                        gap_formated = "+{0}".format(
+                            self.time_format(leader_gap))
                         self.info[i] = [
                             total_time,
                             pilot_key,
@@ -87,7 +82,8 @@ class Racing:
                         lap = prey_lap + 0.3
                         leader_gap = total_time - self.times_sorted[0][0] + 0.3
                         lap_formated = self.time_format(lap)
-                        gap_formated = "+{0}".format(self.time_format(leader_gap))
+                        gap_formated = "+{0}".format(
+                            self.time_format(leader_gap))
                         self.info[i] = [
                             total_time,
                             pilot_key,
@@ -99,7 +95,9 @@ class Racing:
                     leader_gap = total_time - self.times_sorted[0][0]
                     lap_formated = self.time_format(lap)
                     gap_formated = "+{0}".format(self.time_format(leader_gap))
-                    self.info[i] = [total_time, pilot_key, lap_formated, gap_formated]
+                    self.info[i] = [
+                        total_time, pilot_key, lap_formated, gap_formated
+                    ]
             else:
                 lap_formated = self.time_format(lap)
                 self.info[0] = [total_time, pilot_key, lap_formated, 0]
@@ -110,7 +108,8 @@ class Racing:
         return
 
     def time_format(self, timming):
-        time_formated = "{0:.0f}:{1:.3f}".format((timming // 60), (timming % 60))
+        time_formated = "{0:.0f}:{1:.3f}".format((timming // 60),
+                                                 (timming % 60))
         return time_formated
 
     def lap_time(self, pilot_key):
@@ -124,24 +123,15 @@ class Racing:
             tires = self.data[pilot_key]["Tires"]
             spid = sqrt(technique * 0.5 + 0.5 * car_overall)
             lap = (
-                60 * (base_time)
-                - spid * (1 - 0.08 * weather)
-                + 5 * sqrt(weather)
-                - 0.01
-                * self.gen.random()
-                * sqrt(tires * 0.3 + 0.7 * rhythm)
-                / (weather + 1)
-                - 0.1
-                * weather
-                * (
-                    sqrt(concentration * 0.7 + 0.3 * car_overall)
-                    - 0.15 * (concentration * 0.7 + 0.3 * car_overall)
-                )
-            )
+                60 * (base_time) - spid * (1 - 0.08 * weather) +
+                5 * sqrt(weather) -
+                0.01 * self.gen.random() * sqrt(tires * 0.3 + 0.7 * rhythm) /
+                (weather + 1) - 0.1 * weather *
+                (sqrt(concentration * 0.7 + 0.3 * car_overall) - 0.15 *
+                 (concentration * 0.7 + 0.3 * car_overall)))
 
             self.data[pilot_key]["Tires"] -= (
-                0.4 / sqrt(smoothness)
-            ) * 1  # Type of Tires
+                0.4 / sqrt(smoothness)) * 1  # Type of Tires
         else:
             lap = 1000
         return lap
