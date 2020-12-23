@@ -11,6 +11,8 @@ Eles terão 8 Habilidades:
 - Determinação, afeta a consistência de tempos de volta.
 - Agressividade, níveis altos levam a tempos de voltas melhores, mas, menos consistentes e maior chance de batidas. 
 - Delicadeza, afeta o consumo dos pneus, chances de batidas e confiabilidade geral.
+- Chuva, afeta a condução na chuva.
+- Qualificação, afeta a habilidade de fazer uma boa volta qualificatória.
 - Experiência, pilotos mais experientes largarão melhor e terão mais facilidades com ultrapassagem.
 
 ### Carro
@@ -30,7 +32,6 @@ Cada equipe tem 2 pilotos e 1 reserva, lide com contratos e guarde dinheiro para
 Atualmente não existem binários do jogo, devo fazé-los quando estiver mais jogável, enquanto isso quem quiser testar deve ter:
 - Python 3.7+ 
 - PySide6
-- Shiboken6
 Clone esse repositório e rode usando `python3 main.py` em sistemas linux ou `python main.py` em sistemas Windows.
 
 Caso tenham alguma sugestão ou queira ajudar, só falar no meu twitter [@leobat](https://twitter.com/leobat)

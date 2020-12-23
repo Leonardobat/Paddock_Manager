@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from random import SystemRandom
-from math import sqrt
+from math import sqrt, log
 
 
 class Racing_Engine():
@@ -8,13 +8,16 @@ class Racing_Engine():
         self.times_sorted, self.info = [], []
         self.data, self.stats, self.track = [], dict_pilot, dict_track
         self.gen = SystemRandom()
+        self.weather = self.track["Weather"]
+        self.base_time = self.track["Base Time"] * 60
 
     def run_a_lap(self, dict_race):
         self.data = dict_race
         self.racing()
-        return (self.info, self.data)
+        return (self.info[:][1:], self.data)
 
     def racing(self):
+
         for pilot_key in self.data.keys():
             old_time = self.data[pilot_key]["Total Time"]
             if self.stats[pilot_key]["Owner"] == "IA":
@@ -22,15 +25,8 @@ class Racing_Engine():
                     self.data[pilot_key]["Pit-Stop"] = True
             lap = self.lap_time(pilot_key)
             total_time = lap + old_time
-            if self.data[pilot_key]["Pit-Stop"]:  # Pit-Stop
-                lap += 20
-                total_time += 20
-                # print(pilot_key, "Changed Tires")
-                self.data[pilot_key]["Tires"] = 10
-                self.data[pilot_key]["Pit-Stop"] = False
-                self.data[pilot_key]["Pit-Stops"] += 1
-                self.times_sorted.append([total_time, pilot_key, lap])
-                self.info.append([0, pilot_key, 0, 0])
+            if self.data[pilot_key]["Pit-Stop"]:
+                self.pit_stop(pilot_key, total_time, lap)
             else:
                 self.times_sorted.append([total_time, pilot_key, lap])
                 self.info.append([0, pilot_key, 0, 0])
@@ -38,18 +34,20 @@ class Racing_Engine():
         self.times_sorted.sort()
         num_pilots = len(self.times_sorted)
 
-        for i in range(num_pilots):  # Overtakings + Gaps
+        for i in range(num_pilots):
             total_time, pilot_key, lap = self.times_sorted[i]
-            if i != 0:
+            if i > 0:
                 prey_time, prey_key, prey_lap = self.times_sorted[i - 1]
                 gap = total_time - prey_time
                 if gap < 1:
-                    over_diff = (7 + self.track["Difficult"] -
-                                 (self.stats[pilot_key]["Technique"] -
-                                  self.stats[prey_key]["Technique"]))
-                    lucky = 10 * self.gen.random()
+                    overtake_diff = (
+                        self.track["Difficult"] -
+                        (self.stats[pilot_key]["Overtaking"] -
+                         self.stats[prey_key]["Overtaking"]) / 100)
+                    lucky = self.gen.random()
 
-                    if lucky > over_diff:
+                    if lucky > overtake_diff:
+                        # Time from was overtook
                         prey_lap = prey_lap + 0.3
                         prey_time = total_time + 0.3
                         prey_gap = prey_time - self.times_sorted[0][0]
@@ -63,6 +61,7 @@ class Racing_Engine():
                             prey_gap_formated,
                         ]
 
+                        # Time from who overtook
                         leader_gap = total_time - self.times_sorted[0][0]
                         lap_formated = self.time_format(lap)
                         gap_formated = "+{0}".format(
@@ -105,7 +104,6 @@ class Racing_Engine():
             self.data[pilot_key]["Total Time"] = self.times_sorted[i][0]
 
         self.info.sort()
-        return
 
     def time_format(self, timming):
         time_formated = "{0:.0f}:{1:.3f}".format((timming // 60),
@@ -114,24 +112,33 @@ class Racing_Engine():
 
     def lap_time(self, pilot_key):
         if self.data[pilot_key]["Tires"] > 0:
-            base_time, weather = self.track["Base Time"], self.track["Weather"]
-            technique = self.stats[pilot_key]["Technique"]
-            concentration = self.stats[pilot_key]["Concentration"]
+            speed = sqrt(0.5 * (self.stats[pilot_key]["Car"] +
+                                self.stats[pilot_key]["Speed"]))
+            concentration = self.stats[pilot_key][
+                "Determination"] - self.stats[pilot_key]["Agressive"] / 10
             smoothness = self.stats[pilot_key]["Smoothness"]
-            rhythm = self.stats[pilot_key]["Rhythm"]
-            car_overall = self.stats[pilot_key]["Car"]
+            rhythm = (smoothness * 0.8 + 0.2 * concentration)
             tires = self.data[pilot_key]["Tires"]
-            spid = sqrt(technique * 0.5 + 0.5 * car_overall)
-            lap = (
-                60 * (base_time) - spid * (1 - 0.08 * weather) +
-                5 * sqrt(weather) -
-                0.01 * self.gen.random() * sqrt(tires * 0.3 + 0.7 * rhythm) /
-                (weather + 1) - 0.1 * weather *
-                (sqrt(concentration * 0.7 + 0.3 * car_overall) - 0.15 *
-                 (concentration * 0.7 + 0.3 * car_overall)))
 
-            self.data[pilot_key]["Tires"] -= (
-                0.4 / sqrt(smoothness)) * 1  # Type of Tires
+            lap = self.base_time + speed * rhythm / 100 - log(
+                101 - tires) / 8 - (self.gen.random() * rhythm /
+                                    concentration) / 10
+            self.data[pilot_key]["Tires"] -= (10 / sqrt(smoothness))
         else:
-            lap = 1000
+            lap = self.track["Base Time"] * 10
         return lap
+
+    def pit_stop(self, pilot_key, total_time, lap):
+        # print(pilot_key, "Changed Tires")
+        self.data[pilot_key]["Tires"] = 10
+        self.data[pilot_key]["Pit-Stop"] = False
+        self.data[pilot_key]["Pit-Stops"] += 1
+        self.times_sorted.append([total_time + 20, pilot_key, lap + 20])
+        self.info.append([0, pilot_key, 0, 0])
+
+        # 60 * (base_time) - spid * (1 - 0.08 * weather) +
+        # 5 * sqrt(weather) -
+        # 0.01 * self.gen.random() * sqrt(tires * 0.3 + 0.7 * rhythm) /
+        # (weather + 1) - 0.1 * weather *
+        # (sqrt(concentration * 0.7 + 0.3 * car_overall) - 0.15 *
+        #  (concentration * 0.7 + 0.3 * car_overall)))

@@ -306,7 +306,7 @@ class Interface_Corrida(QWidget):
         self.table.setRowCount(0)
         self.items = 0
         for k in range(num_pilots):
-            total_time, pilot_name, lap, gap = times_sorted[k]
+            pilot_name, lap, gap = times_sorted[k]
 
             if k == 0:
                 gap_item = QTableWidgetItem("Leader")
