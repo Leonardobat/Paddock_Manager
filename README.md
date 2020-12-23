@@ -26,6 +26,12 @@ Os carros tem as seguintes características:
 Cada equipe tem 2 pilotos e 1 reserva, lide com contratos e guarde dinheiro para o desenvolvimento do carro, compre atualizações para o atual e arranje patrocinadores.
 > Essa parte ainda está em aberto...
 
+### Instalação
+Atualmente não existem binários do jogo, devo fazé-los quando estiver mais jogável, enquanto isso quem quiser testar deve ter:
+- Python 3.7+ 
+- PySide6
+- Shiboken6
+Clone esse repositório e rode usando `python3 main.py` em sistemas linux ou `python main.py` em sistemas Windows.
 
 Caso tenham alguma sugestão ou queira ajudar, só falar no meu twitter [@leobat](https://twitter.com/leobat)
 
