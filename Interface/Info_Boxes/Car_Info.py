@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QPalette, QFont
+from PySide6.QtGui import QPalette, QFont, QColor
 from PySide6.QtWidgets import (QLabel, QPushButton, QWidget, QFrame,
                                QGridLayout)
 
@@ -9,6 +9,10 @@ class Car_Info(QWidget):
     def __init__(self, data: dict, palette):
         QWidget.__init__(self)
         self.palette = QPalette()
+        self.palette.setColor(QPalette.Active, QPalette.Window,
+                              QColor(255, 255, 255, 255))
+        self.palette.setColor(QPalette.Active, QPalette.WindowText,
+                              QColor(0, 0, 0, 255))
 
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
@@ -28,6 +32,7 @@ class Car_Info(QWidget):
         self.overall = QLabel(str(int(self.overall)))
 
         self.layout = QGridLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.title, 0, 0, 1, 4)
         self.layout.addWidget(self.frame, 0, 0, 7, 4)
         self.layout.addWidget(QLabel('Aerodinâmica'), 1, 1)
@@ -45,3 +50,14 @@ class Car_Info(QWidget):
         self.setLayout(self.layout)
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
+
+    @Slot()
+    def update_info(self, data: dict):
+        self.aero.setText(str(data['Car']['Aerodynamics']))
+        self.relia.setText(str(data['Car']['Reliability']))
+        self.motor.setText(str(data['Car']['Motor']))
+        self.eletronics.setText(str(data['Car']['Electronics']))
+        self.suspension.setText(str(data['Car']['Suspension']))
+        overall = (data['Car']['Aerodynamics'] + data['Car']['Suspension'] +
+                   data['Car']['Motor'] + data['Car']['Electronics']) / 4
+        self.overall.setText(str(int(overall)))

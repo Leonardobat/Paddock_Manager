@@ -124,7 +124,7 @@ class Interface_Corrida(QWidget):
             "Base Time": 1.7,
             "Difficult": 0.3,
             "Raced Laps": 0,
-            "Total Laps": 67,
+            "Total_Laps": 67,
             "Weather": 0,
         }
 
@@ -170,7 +170,7 @@ class Interface_Corrida(QWidget):
         text = "{0} - {1}/{2}".format(
             self.dict_track["Name"],
             self.dict_track["Raced Laps"],
-            self.dict_track["Total Laps"],
+            self.dict_track["Total_Laps"],
         )
         self.label_track.setText(text)
         self.label_track.setAlignment(Qt.AlignRight)
@@ -310,7 +310,7 @@ class Interface_Corrida(QWidget):
         self.table.setRowCount(0)
         self.items = 0
         for k in range(num_pilots):
-            total_time, pilot_name, lap, gap = times_sorted[k]
+            pilot_name, lap, gap = times_sorted[k]
 
             if k == 0:
                 gap_item = QTableWidgetItem("Leader")
@@ -343,13 +343,13 @@ class Interface_Corrida(QWidget):
             self.table.setItem(self.items, 3, gap_item)
             self.items += 1
 
-        if self.dict_track["Raced Laps"] < self.dict_track["Total Laps"]:
+        if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
             sleep(0.1)
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
                 self.dict_track["Name"],
                 self.dict_track["Raced Laps"],
-                self.dict_track["Total Laps"],
+                self.dict_track["Total_Laps"],
             )
             self.label_track.setText(text)
             self.pilot1_tire_bar.setValue(
