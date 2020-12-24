@@ -22,85 +22,90 @@ class Interface_Corrida(QWidget):
 
         # Test data
         self.dict_race = {
-            "Vettel": {
+            "C. Sainz": {
                 "Total Time": 0,
                 "Pit-Stop": False,
-                "Tires": 10,
+                "Tires": 100,
+                "Car Health": 100,
+                "Pit-Stops": 0,
+            },
+            "C. Leclerc": {
+                "Total Time": 0,
+                "Pit-Stop": False,
+                "Tires": 100,
                 "Car Health": 100,
                 "Pit-Stops": 0,
             },
             "L. Hamilton": {
                 "Total Time": 0,
                 "Pit-Stop": False,
-                "Tires": 10,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            },
-            "Leclerc": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 10,
+                "Tires": 100,
                 "Car Health": 100,
                 "Pit-Stops": 0,
             },
             "V. Bottas": {
                 "Total Time": 0,
                 "Pit-Stop": False,
-                "Tires": 10,
+                "Tires": 100,
                 "Car Health": 100,
                 "Pit-Stops": 0,
             },
-            "Kubica": {
+            "G. Russell": {
                 "Total Time": 0,
                 "Pit-Stop": False,
-                "Tires": 10,
+                "Tires": 100,
                 "Car Health": 100,
                 "Pit-Stops": 0,
             },
         }
         self.dict_pilot = {
-            "Vettel": {
-                "Technique": 9,
-                "Smoothness": 9,
-                "Rhythm": 9,
-                "Concentration": 9,
-                "Car": 9,
+            "C. Sainz": {
+                "Speed": 77,
+                "Smoothness": 83,
+                "Determination": 85,
+                "Agressive": 74,
+                "Overtaking": 77,
+                "Car": 78,
+                "Team": "Ferrari",
+                "Owner": "IA",
+            },
+            "C. Leclerc": {
+                "Speed": 80,
+                "Smoothness": 79,
+                "Determination": 87,
+                "Agressive": 81,
+                "Overtaking": 80,
+                "Car": 80,
                 "Team": "Ferrari",
                 "Owner": "IA",
             },
             "L. Hamilton": {
-                "Technique": 10,
-                "Smoothness": 10,
-                "Rhythm": 10,
-                "Concentration": 10,
-                "Car": 10,
+                "Speed": 91,
+                "Smoothness": 93,
+                "Determination": 98,
+                "Agressive": 75,
+                "Overtaking": 90,
+                "Car": 95,
                 "Team": "Mercedes",
                 "Owner": "Player",
-            },
-            "Leclerc": {
-                "Technique": 8,
-                "Smoothness": 8,
-                "Rhythm": 8,
-                "Concentration": 8,
-                "Car": 8,
-                "Team": "Ferrari",
-                "Owner": "IA",
             },
             "V. Bottas": {
-                "Technique": 7,
-                "Smoothness": 7,
-                "Rhythm": 7,
-                "Concentration": 7,
-                "Car": 7,
+                "Speed": 83,
+                "Smoothness": 87,
+                "Determination": 78,
+                "Agressive": 72,
+                "Overtaking": 82,
+                "Car": 95,
                 "Team": "Mercedes",
                 "Owner": "Player",
             },
-            "Kubica": {
-                "Technique": 5,
-                "Smoothness": 5,
-                "Rhythm": 5,
-                "Concentration": 5,
-                "Car": 5,
+            "G. Russell": {
+                "Speed": 85,
+                "Smoothness": 78,
+                "Determination": 90,
+                "Agressive": 78,
+                "Overtaking": 79,
+                "Car": 67,
                 "Team": "Willians",
                 "Owner": "IA",
             },
@@ -140,9 +145,8 @@ class Interface_Corrida(QWidget):
         self.pilot1_tire_bar.setSizePolicy(QSizePolicy.Preferred,
                                            QSizePolicy.Minimum)
         self.pilot1_tire_bar.setRange(0, 100)
-        self.pilot1_tire_bar.setValue(self.dict_race[self.pilots[0]]["Tires"] *
-                                      10)
-        self.pilot1_label_pitstops = QLabel("Pitstops: {0}".format(
+        self.pilot1_tire_bar.setValue(self.dict_race[self.pilots[0]]["Tires"])
+        self.pilot1_label_pitstops = QLabel("Pitstops: {}".format(
             self.dict_race[self.pilots[0]]["Pit-Stops"]))
 
         self.pilot2_name = QLabel(self.pilots[1])
@@ -152,9 +156,8 @@ class Interface_Corrida(QWidget):
         self.pilot2_tire_bar.setSizePolicy(QSizePolicy.Preferred,
                                            QSizePolicy.Minimum)
         self.pilot2_tire_bar.setRange(0, 100)
-        self.pilot2_tire_bar.setValue(self.dict_race[self.pilots[1]]["Tires"] *
-                                      10)
-        self.pilot2_label_pitstops = QLabel("Pitstops: {0}".format(
+        self.pilot2_tire_bar.setValue(self.dict_race[self.pilots[1]]["Tires"])
+        self.pilot2_label_pitstops = QLabel("Pitstops: {}".format(
             self.dict_race[self.pilots[1]]["Pit-Stops"]))
 
         # Right
@@ -344,7 +347,7 @@ class Interface_Corrida(QWidget):
             self.items += 1
 
         if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
-            sleep(0.1)
+            sleep(0.2)
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
                 self.dict_track["Name"],
@@ -353,9 +356,9 @@ class Interface_Corrida(QWidget):
             )
             self.label_track.setText(text)
             self.pilot1_tire_bar.setValue(
-                self.dict_race[self.pilots[0]]["Tires"] * 10)
+                self.dict_race[self.pilots[0]]["Tires"])
             self.pilot2_tire_bar.setValue(
-                self.dict_race[self.pilots[1]]["Tires"] * 10)
+                self.dict_race[self.pilots[1]]["Tires"])
             self.pilot1_label_pitstops.setText("Pitstops: {0}".format(
                 self.dict_race[self.pilots[0]]["Pit-Stops"]))
             self.pilot2_label_pitstops.setText("Pitstops: {0}".format(

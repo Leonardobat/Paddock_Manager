@@ -14,14 +14,14 @@ class Racing_Engine():
     def run_a_lap(self, dict_race):
         self.data = dict_race
         self.racing()
-        return (self.info[:][1:], self.data)
+        return ([i[1:] for i in self.info], self.data)
 
     def racing(self):
 
         for pilot_key in self.data.keys():
             old_time = self.data[pilot_key]["Total Time"]
             if self.stats[pilot_key]["Owner"] == "IA":
-                if self.data[pilot_key]["Tires"] < 2:
+                if self.data[pilot_key]["Tires"] < 30:
                     self.data[pilot_key]["Pit-Stop"] = True
             lap = self.lap_time(pilot_key)
             total_time = lap + old_time
@@ -40,10 +40,11 @@ class Racing_Engine():
                 prey_time, prey_key, prey_lap = self.times_sorted[i - 1]
                 gap = total_time - prey_time
                 if gap < 1:
-                    overtake_diff = (
-                        self.track["Difficult"] -
-                        (self.stats[pilot_key]["Overtaking"] -
-                         self.stats[prey_key]["Overtaking"]) / 100)
+                    overtake_diff = (self.track["Difficult"] - (
+                        (self.stats[pilot_key]["Overtaking"] +
+                         self.stats[pilot_key]["Agressive"]) -
+                        (self.stats[prey_key]["Overtaking"] +
+                         self.stats[prey_key]["Agressive"])) / 100)
                     lucky = self.gen.random()
 
                     if lucky > overtake_diff:
@@ -112,33 +113,26 @@ class Racing_Engine():
 
     def lap_time(self, pilot_key):
         if self.data[pilot_key]["Tires"] > 0:
-            speed = sqrt(0.5 * (self.stats[pilot_key]["Car"] +
-                                self.stats[pilot_key]["Speed"]))
+            car = self.stats[pilot_key]["Car"]
+            speed = sqrt(0.5 * (car + self.stats[pilot_key]["Speed"]))
             concentration = self.stats[pilot_key][
                 "Determination"] - self.stats[pilot_key]["Agressive"] / 10
-            smoothness = self.stats[pilot_key]["Smoothness"]
-            rhythm = (smoothness * 0.8 + 0.2 * concentration)
+            smoothness = self.stats[pilot_key]["Smoothness"] - (1 / car)
+            rhythm = (smoothness * 0.6 + 0.2 * concentration)
             tires = self.data[pilot_key]["Tires"]
 
-            lap = self.base_time + speed * rhythm / 100 - log(
-                101 - tires) / 8 - (self.gen.random() * rhythm /
-                                    concentration) / 10
-            self.data[pilot_key]["Tires"] -= (10 / sqrt(smoothness))
+            lap = self.base_time - speed * 0.9 + log(101 - tires) / 8 + (
+                self.gen.random() * rhythm / concentration) / 10
+            self.data[pilot_key]["Tires"] -= (10 / sqrt(smoothness)) * (
+                100 / self.track["Total_Laps"])
         else:
             lap = self.track["Base Time"] * 10
         return lap
 
     def pit_stop(self, pilot_key, total_time, lap):
         # print(pilot_key, "Changed Tires")
-        self.data[pilot_key]["Tires"] = 10
+        self.data[pilot_key]["Tires"] = 100
         self.data[pilot_key]["Pit-Stop"] = False
         self.data[pilot_key]["Pit-Stops"] += 1
         self.times_sorted.append([total_time + 20, pilot_key, lap + 20])
         self.info.append([0, pilot_key, 0, 0])
-
-        # 60 * (base_time) - spid * (1 - 0.08 * weather) +
-        # 5 * sqrt(weather) -
-        # 0.01 * self.gen.random() * sqrt(tires * 0.3 + 0.7 * rhythm) /
-        # (weather + 1) - 0.1 * weather *
-        # (sqrt(concentration * 0.7 + 0.3 * car_overall) - 0.15 *
-        #  (concentration * 0.7 + 0.3 * car_overall)))
