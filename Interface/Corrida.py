@@ -196,18 +196,17 @@ class Interface_Corrida(QWidget):
         self.label_info.setFrameShape(QFrame.Panel)
 
         # Pilots Info Layout
-
-        self.box_line1 = QFrame()
-        self.box_line1.setFrameShape(QFrame.StyledPanel)
-        self.pilot1_layout.addWidget(self.box_line1, 0, 0, 6, 3)
+        self.box_1 = QFrame()
+        self.box_1.setFrameShape(QFrame.StyledPanel)
+        self.pilot1_layout.addWidget(self.box_1, 0, 0, 6, 3)
         self.pilot1_layout.addWidget(self.pilot1_name, 1, 1)
         self.pilot1_layout.addWidget(self.pilot1_label_tire, 2, 1)
         self.pilot1_layout.addWidget(self.pilot1_tire_bar, 3, 1)
         self.pilot1_layout.addWidget(self.pilot1_label_pitstops, 4, 1)
 
-        self.box_line2 = QFrame()
-        self.box_line2.setFrameShape(QFrame.StyledPanel)
-        self.pilot2_layout.addWidget(self.box_line2, 0, 0, 6, 3)
+        self.box_2 = QFrame()
+        self.box_2.setFrameShape(QFrame.StyledPanel)
+        self.pilot2_layout.addWidget(self.box_2, 0, 0, 6, 3)
         self.pilot2_layout.addWidget(self.pilot2_name, 1, 1)
         self.pilot2_layout.addWidget(self.pilot2_label_tire, 2, 1)
         self.pilot2_layout.addWidget(self.pilot2_tire_bar, 3, 1)
@@ -227,7 +226,6 @@ class Interface_Corrida(QWidget):
         self.right_layout.addLayout(self.pilots_layout)
         self.right_layout.addStretch(1)
         self.right_layout.addWidget(self.play_button, 1)
-        # self.right_layout.addWidget(self.run,1)
 
         # Left Layout
         self.left_layout.addWidget(self.label_track)
@@ -346,7 +344,7 @@ class Interface_Corrida(QWidget):
             self.items += 1
 
         if self.dict_track["Raced Laps"] < self.dict_track["Total Laps"]:
-            time.sleep(0.1)
+            sleep(0.1)
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
                 self.dict_track["Name"],

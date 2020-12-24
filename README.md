@@ -2,7 +2,7 @@
 O jogo é um clone do saudoso cockpit manager, a ideia é aprimorar e ter um motor de corridas flexível para não só a comunidade de amantes de F1, mas também de todos que gostam do automobilismo.  
 Nele você vai coordenar a sua própria equipe e rumará em busca do título mundial de construtores, cuidando do desenvolvimento, das finanças e dos pilotos.
 
-> Jogo em estágio inicial de Desenvolvimento, pretendo torná-lo jogavel até 2021. 
+> Jogo em estágio inicial de Desenvolvimento, pretendo torná-lo jogável até 2021. 
 
 ### Pilotos
 Eles terão 8 Habilidades:
