@@ -9,9 +9,11 @@ from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
                                QTableWidget, QTableWidgetItem, QVBoxLayout,
                                QWidget, QProgressBar, QSizePolicy, QFrame,
                                QGridLayout)
+from DB.DB import get_db
 
 
 class Interface_Corrida(QWidget):
+    db = get_db()
     normal_mode = Signal()
 
     def __init__(self):
@@ -21,43 +23,6 @@ class Interface_Corrida(QWidget):
         self.play_race = True
 
         # Test data
-        self.dict_race = {
-            "C. Sainz": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            },
-            "C. Leclerc": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            },
-            "L. Hamilton": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            },
-            "V. Bottas": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            },
-            "G. Russell": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            },
-        }
         self.dict_pilot = {
             "C. Sainz": {
                 "Speed": 77,
@@ -256,43 +221,6 @@ class Interface_Corrida(QWidget):
         self.dict_race[self.pilots[1]]["Pit-Stop"] = True
 
     @Slot()
-    def restart_race(self):
-        self.dict_race = {
-            "Vettel": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 10,
-                "Car Health": 100,
-            },
-            "L. Hamilton": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 10,
-                "Car Health": 100,
-            },
-            "Leclerc": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 10,
-                "Car Health": 100,
-            },
-            "V. Bottas": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 10,
-                "Car Health": 100,
-            },
-            "Kubica": {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 10,
-                "Car Health": 100,
-            },
-        }
-        self.dict_track["Raced Laps"] = 0
-        self.play_button.setEnabled(True)
-
-    @Slot()
     def run_race(self):
         if self.play_race:
             self.run.setDown(True)
@@ -398,3 +326,40 @@ class Interface_Corrida(QWidget):
     @Slot()
     def to_main(self):
         self.normal_mode.emit()
+
+    @Slot()
+    def clear_data(self):
+        pass
+
+    @Slot()
+    def import_data(self):
+        pilot_keys = self.db.execute('SELECT Name FROM pilots').fetchall()
+        pilot_keys = [i[0] for i in pilot_keys]
+        self.dict_race = {}
+        for key in pilot_keys:
+            self.dict_pilot[key] = dict(
+                self.db.execute(
+                    'SELECT (Speed, Smoothness, Determination,'
+                    ' Agressive, Overtaking, Team) FROM pilots'
+                    ' WHERE Name = ?',
+                    (key, ),
+                ).fetchone())
+
+            if self.dict_pilot[key]['Team'] != 'Mercerdes':
+                self.dict_pilot[key]['Owner'] = 'IA'
+            else:
+                self.dict_pilot[key]['Owner'] = 'Player'
+            self.dict_race[key] = {
+                "Total Time": 0,
+                "Pit-Stop": False,
+                "Tires": 100,
+                "Car Health": 100,
+                "Pit-Stops": 0,
+            }
+
+    @Slot()
+    def restart_race(self):
+        self.import_data()
+
+        self.dict_track["Raced Laps"] = 0
+        self.play_button.setEnabled(True)

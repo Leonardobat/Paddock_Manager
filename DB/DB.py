@@ -24,7 +24,8 @@ def create_new_db(name):
 def init_db():
     print("Starting Databases...")
     db = get_db()
-    with open('schema_db.sql') as f:
+    path = Path.cwd() / 'sav' / 'schema_db.sql'
+    with Path.open(path) as f:
         db.executescript(f.read())
         db.execute("VACUUM")
         db.commit()

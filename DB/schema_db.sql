@@ -32,6 +32,7 @@ CREATE TABLE teams (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   Name_Full TEXT UNIQUE,
   Name TEXT UNIQUE,
+  Principal TEXT UNIQUE,
   Color1 TEXT,
   Color2 TEXT,
   Country TEXT,

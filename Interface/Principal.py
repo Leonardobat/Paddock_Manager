@@ -13,27 +13,27 @@ from .Info_Boxes.Team_Info import Team_Info
 from .Info_Boxes.Financial_Info import Financial_Info
 from .Info_Boxes.News_Info import News_Info
 from .Info_Boxes.Race_Info import Race_Info
+from DB.DB import get_db
 
 
 class Interface_Principal(QWidget):
+    db = get_db()
     race_mode = Signal()
     update_signal = Signal(dict)
 
     def __init__(self):
         QWidget.__init__(self)
-        self.data = self.import_data()
+        self.import_data()
         self.palette = QPalette()
         self.palette.setColor(QPalette.Active, QPalette.Window,
-                              self.data['Team']['Color']['Primary'])
+                              self.data['Team']['Primary_Color'])
         self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              self.data['Team']['Color']['Secondary'])
+                              self.data['Team']['Secondary_Color'])
         self.palette_alternative = QPalette()
-        self.palette_alternative.setColor(
-            QPalette.Active, QPalette.Window,
-            self.data['Team']['Color']['Secondary'])
-        self.palette_alternative.setColor(
-            QPalette.Active, QPalette.WindowText,
-            self.data['Team']['Color']['Primary'])
+        self.palette_alternative.setColor(QPalette.Active, QPalette.Window,
+                                          self.data['Team']['Secondary_Color'])
+        self.palette_alternative.setColor(QPalette.Active, QPalette.WindowText,
+                                          self.data['Team']['Primary_Color'])
 
         # Boxes
         self.carbox = Car_Info(self.data, self.palette)
@@ -72,59 +72,94 @@ class Interface_Principal(QWidget):
         self.update_signal.emit(self.data)
 
     def import_data(self):
-        ret = {
-            'Team': {
-                'Name': 'Mercedes-AMG Petronas F1',
-                'Principal': 'Toto Wolff',
-                'Color': {
-                    'Primary': QColor(255, 40, 0, 255),
-                    'Secondary': QColor(255, 242, 0, 255),
-                }
-            },
-            'Pilot 1': {
-                'Name': 'L. Hamilton',
-                'Info': (0, 0, 0, 0)
-            },
-            'Pilot 2': {
-                'Name': 'V. Bottas',
-                'Info': (0, 0, 0, 0)
-            },
-            'Pilot 3': {
-                'Name': 'S. Vandoorne',
-                'Info': (0, 0, 0, 0)
-            },
-            'Sponsor 1': {
-                'Name': 'Petronas',
-                'Value': '£ 60 Mi'
-            },
-            'Sponsor 2': {
-                'Name': 'Ineos',
-                'Value': '£ 40 Mi'
-            },
-            'Sponsor 3': {
-                'Name': 'EPSON',
-                'Value': '£ 10 Mi'
-            },
-            'Sponsor 4': {
-                'Name': 'UBS',
-                'Value': '£ 10 Mi'
-            },
-            'Sponsor 5': {
-                'Name': 'BOSE',
-                'Value': '£ 10 Mi'
-            },
-            'Cash': '£ 300 Mi',
-            'Car': {
-                'Aerodynamics': 100,
-                'Electronics': 100,
-                'Motor': 100,
-                'Suspension': 100,
-                'Reliability': 100,
-            },
+        team = self.db.execute('SELECT * FROM teams WHERE id = 1').fetchone()
+        team = dict(team)
+        team['Primary_Color'] = QColor(int(team['Color1'][0:2], 16),
+                                       int(team['Color1'][2:4], 16),
+                                       int(team['Color1'][4:6], 16),
+                                       int(team['Color1'][6:], 16))
+        team['Secondary_Color'] = QColor(int(team['Color2'][0:2], 16),
+                                         int(team['Color2'][2:4], 16),
+                                         int(team['Color2'][4:6], 16),
+                                         int(team['Color2'][6:], 16))
+        del team['Color1']
+        del team['Color2']
+
+        team['Motor'] = self.db.execute(
+            'SELECT Power FROM motors WHERE id = ?',
+            (team['motorid'], ),
+        ).fetchone()[0]
+
+        team['Sponsor 1'] = {
+            'Name':
+            team['Sponsor_0'],
+            'Value':
+            self.db.execute(
+                'SELECT Value FROM sponsors WHERE Name = ?',
+                (team['Sponsor_0'], ),
+            ).fetchone()[0]
+        }
+        team['Sponsor 2'] = {
+            'Name':
+            team['Sponsor_1'],
+            'Value':
+            self.db.execute(
+                'SELECT Value FROM sponsors WHERE Name = ?',
+                (team['Sponsor_1'], ),
+            ).fetchone()[0]
+        }
+        team['Sponsor 3'] = {
+            'Name':
+            team['Sponsor_2'],
+            'Value':
+            self.db.execute(
+                'SELECT Value FROM sponsors WHERE Name = ?',
+                (team['Sponsor_2'], ),
+            ).fetchone()[0]
+        }
+        team['Sponsor 4'] = {
+            'Name':
+            team['Sponsor_3'],
+            'Value':
+            self.db.execute(
+                'SELECT Value FROM sponsors WHERE Name = ?',
+                (team['Sponsor_3'], ),
+            ).fetchone()[0]
+        }
+        team['Sponsor 5'] = {
+            'Name':
+            team['Sponsor_4'],
+            'Value':
+            self.db.execute(
+                'SELECT Value FROM sponsors WHERE Name = ?',
+                (team['Sponsor_4'], ),
+            ).fetchone()[0]
+        }
+
+        pilot1 = self.db.execute(
+            'SELECT * FROM pilots WHERE Team = ?',
+            (team['Name'], ),
+        ).fetchall()[0]
+        pilot1 = dict(pilot1)
+        pilot1['Info'] = (0, 0, 0, 0)
+
+        pilot2 = self.db.execute(
+            'SELECT * FROM pilots WHERE Team = ?',
+            (team['Name'], ),
+        ).fetchall()[1]
+        pilot2 = dict(pilot2)
+        pilot2['Info'] = (0, 0, 0, 0)
+
+        pilot3 = {'Name': 'S. Vandoorne'}
+
+        self.data = {
+            'Team': team,
+            'Pilot 1': pilot1,
+            'Pilot 2': pilot2,
+            'Pilot 3': pilot3,
             'Next_Track': {
                 'Name1': 'Spa-Francochamps',
                 'Name2': 'GP da Bélgica',
                 'Total_Laps': 67,
             }
         }
-        return ret

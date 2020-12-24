@@ -21,14 +21,14 @@ class Car_Info(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
-        self.aero = QLabel(str(data['Car']['Aerodynamics']))
-        self.relia = QLabel(str(data['Car']['Reliability']))
-        self.motor = QLabel(str(data['Car']['Motor']))
-        self.eletronics = QLabel(str(data['Car']['Electronics']))
-        self.suspension = QLabel(str(data['Car']['Suspension']))
-        self.overall = (data['Car']['Aerodynamics'] +
-                        data['Car']['Suspension'] + data['Car']['Motor'] +
-                        data['Car']['Electronics']) / 4
+        self.aero = QLabel(str(data['Team']['Aerodynamics']))
+        self.relia = QLabel(str(data['Team']['Reliability']))
+        self.motor = QLabel(str(data['Team']['Motor']))
+        self.eletronics = QLabel(str(data['Team']['Electronics']))
+        self.suspension = QLabel(str(data['Team']['Suspension']))
+        self.overall = (data['Team']['Aerodynamics'] +
+                        data['Team']['Suspension'] + data['Team']['Motor'] +
+                        data['Team']['Electronics']) / 4
         self.overall = QLabel(str(int(self.overall)))
 
         self.layout = QGridLayout()
