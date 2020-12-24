@@ -8,133 +8,73 @@ from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
                                QTableWidget, QTableWidgetItem, QVBoxLayout,
                                QWidget, QProgressBar, QSizePolicy, QFrame,
                                QGridLayout)
-
+from .Info_Boxes.Car_Info import Car_Info
+from .Info_Boxes.Team_Info import Team_Info
+from .Info_Boxes.Financial_Info import Financial_Info
 
 class Interface_Principal(QWidget):
     race_mode = Signal()
 
     def __init__(self):
         QWidget.__init__(self)
-        self.font = QFont()
-        self.font.setItalic(True)
         data = self.import_data()
         self.palette = QPalette()
         self.palette.setColor(QPalette.Active, QPalette.Window,
                               data['Team']['Color']['Primary'])
         self.palette.setColor(QPalette.Active, QPalette.WindowText,
                               data['Team']['Color']['Secondary'])
-        self.palette_title = QPalette()
-        self.palette_title.setColor(QPalette.Active, QPalette.Window,
-                                    data['Team']['Color']['Secondary'])
-        self.palette_title.setColor(QPalette.Active, QPalette.WindowText,
-                                    data['Team']['Color']['Primary'])
+        self.palette_alternative = QPalette()
+        self.palette_alternative.setColor(QPalette.Active, QPalette.Window,
+                                          data['Team']['Color']['Secondary'])
+        self.palette_alternative.setColor(QPalette.Active, QPalette.WindowText,
+                                          data['Team']['Color']['Primary'])
 
-        # Car Info
-        self.carbox = QGridLayout()
-        self.carframe = QFrame()
-        self.carframe.setFrameShape(QFrame.Box)
-        self.carbox_title = QLabel('Carro')
-        self.carbox_title.setPalette(self.palette_title)
-        self.carbox_title.setAlignment(Qt.AlignCenter)
-        self.carbox_title.setAutoFillBackground(True)
-        self.carbox.addWidget(self.carbox_title, 0, 0, 1, 4)
-        self.carbox.addWidget(self.carframe, 0, 0, 7, 4)
-        self.carbox.addWidget(QLabel('Aerodinâmica'), 1, 1)
-        self.aero = QLabel(str(data['Car']['Aerodynamics']))
-        self.carbox.addWidget(self.aero, 1, 2)
-        self.carbox.addWidget(QLabel('Confiabilidade'), 2, 1)
-        self.relia = QLabel(str(data['Car']['Reliability']))
-        self.carbox.addWidget(self.relia, 2, 2)
-        self.carbox.addWidget(QLabel('Motor'), 3, 1)
-        self.motor = QLabel(str(data['Car']['Motor']))
-        self.carbox.addWidget(self.motor, 3, 2)
-        self.carbox.addWidget(QLabel('Eletrônica'), 4, 1)
-        self.eletronics = QLabel(str(data['Car']['Electronics']))
-        self.carbox.addWidget(self.eletronics, 4, 2)
-        self.carbox.addWidget(QLabel('Suspensão'), 5, 1)
-        self.suspension = QLabel(str(data['Car']['Suspension']))
-        self.carbox.addWidget(self.suspension, 5, 2)
-        self.carbox.addWidget(QLabel('Geral'), 6, 1)
-        self.overall = (data['Car']['Aerodynamics'] +
-                        data['Car']['Suspension'] + data['Car']['Motor'] +
-                        data['Car']['Electronics']) / 4
-        self.overall = QLabel(str(int(self.overall)))
-        self.carbox.addWidget(
-            self.overall,
-            6,
-            2,
-        )
+        # Boxes
+        self.carbox = Car_Info(data, self.palette)
+        self.teambox = Team_Info(data, self.palette)
+        self.finanbox = Financial_Info(data, self.palette)
 
-        # Team Info
-        self.teamframe = QFrame()
-        self.teamframe.setFrameShape(QFrame.Box)
-        self.teambox = QGridLayout()
-        self.team_name = QLabel(data['Team']['Name'])
-        self.team_name.setPalette(self.palette_title)
-        self.team_name.setAlignment(Qt.AlignCenter)
-        self.team_name.setAutoFillBackground(True)
-        self.user_name = QLabel(data['Team']['Principal'])
-        self.user_name.setFont(self.font)
-        self.info_p1 = QLabel('DNF {} / Vit. {} / Pol. {} / Pts. {}'.format(
-            0, 0, 0, 0))
-        self.info_p1.setAlignment(Qt.AlignCenter)
-        self.info_p2 = QLabel('DNF {} / Vit. {} / Pol. {} / Pts. {}'.format(
-            0, 0, 0, 0))
-        self.info_p2.setAlignment(Qt.AlignCenter)
+        # News Box
+        self.news_title = QLabel('Notícias')
+        self.news_title.setPalette(self.palette)
+        self.news_title.setAlignment(Qt.AlignCenter)
+        self.news_title.setAutoFillBackground(True)
+        self.news = QLabel('Notícias')
+        self.news.setAlignment(Qt.AlignCenter)
+        self.newsframe = QFrame()
+        self.newsframe.setFrameShape(QFrame.Panel)
+        self.newsframe.setFrameShadow(QFrame.Sunken)
 
-        self.teambox.addWidget(self.team_name, 0, 0, 1, 4)
-        self.teambox.addWidget(self.teamframe, 0, 0, 7, 4)
-        self.teambox.addWidget(QLabel('Chefe da Equipe'), 1, 1)
-        self.teambox.addWidget(self.user_name, 1, 2)
-        self.teambox.addWidget(QLabel('Piloto 1'), 2, 1)
-        self.teambox.addWidget(QLabel(data['Pilot 1']), 2, 2)
-        self.teambox.addWidget(self.info_p1, 3, 1, 1, 2)
-        self.teambox.addWidget(QLabel('Piloto 2'), 4, 1)
-        self.teambox.addWidget(QLabel(data['Pilot 2']), 4, 2)
-        self.teambox.addWidget(self.info_p2, 5, 1, 1, 2)
-        self.teambox.addWidget(QLabel('Reserva'), 6, 1)
-        self.teambox.addWidget(QLabel(data['Pilot 3']), 6, 2)
+        self.newsbox = QGridLayout()
+        self.newsbox.addWidget(self.news_title, 0, 0)
+        self.newsbox.addWidget(self.newsframe, 0, 0, 2, 1)
+        self.newsbox.addWidget(self.news, 1, 0)
+        self.newsbox.setRowStretch(0, 1)
+        self.newsbox.setRowStretch(1, 3)
 
-        # Financial Info
-        self.finframe = QFrame()
-        self.finframe.setFrameShape(QFrame.Box)
-        self.finanbox = QGridLayout()
-        self.finanbox_title = QLabel('Finanças')
-        self.finanbox_title.setPalette(self.palette_title)
-        self.finanbox_title.setAlignment(Qt.AlignCenter)
-        self.finanbox_title.setAutoFillBackground(True)
-        self.finanbox.addWidget(self.finanbox_title, 0, 0, 1, 4)
-        self.finanbox.addWidget(self.finframe, 0, 0, 7, 4)
-        self.finanbox.addWidget(QLabel('Caixa'), 1, 1)
-        self.finanbox.addWidget(QLabel(data['Cash']), 1, 2)
-        self.finanbox.addWidget(QLabel(data['Sponsor 1']['Name']), 2, 1)
-        self.finanbox.addWidget(QLabel(data['Sponsor 1']['Value']), 2, 2)
-        self.finanbox.addWidget(QLabel(data['Sponsor 2']['Name']), 3, 1)
-        self.finanbox.addWidget(QLabel(data['Sponsor 2']['Value']), 3, 2)
-        self.finanbox.addWidget(QLabel(data['Sponsor 3']['Name']), 4, 1)
-        self.finanbox.addWidget(QLabel(data['Sponsor 3']['Value']), 4, 2)
-        self.finanbox.addWidget(QLabel(data['Sponsor 4']['Name']), 5, 1)
-        self.finanbox.addWidget(QLabel(data['Sponsor 4']['Value']), 5, 2)
-        self.finanbox.addWidget(QLabel(data['Sponsor 5']['Name']), 6, 1)
-        self.finanbox.addWidget(QLabel(data['Sponsor 5']['Value']), 6, 2)
+        # Race Box
+        self.next_race = QLabel('Próximo GP:')
+        self.next_race.setAlignment(Qt.AlignCenter)
+        self.next_race.setFrameShape(QFrame.Panel)
+        self.next_race.setFrameShadow(QFrame.Sunken)
+        self.race_button = QPushButton('Corrida')
+        self.race_button.clicked.connect(self.to_race)
+        self.racebox = QGridLayout()
+        self.racebox.addWidget(self.next_race, 0, 0)
+        self.racebox.addWidget(self.race_button, 1, 0)
 
         # Layout
         self.grid = QGridLayout()
-        self.grid.addLayout(self.carbox, 0, 0, 1, 1)
-        self.grid.addLayout(self.teambox, 0, 1, 1, 1)
-        self.grid.addLayout(self.finanbox, 0, 2, 1, 1)
-        self.news = QLabel('DEV')
-        self.grid.addWidget(self.news, 1, 0, 1, 1)
-        self.next_race = QLabel('DEV')
-        self.grid.addWidget(self.next_race, 1, 1, 1, 1)
-        button = QPushButton('Corrida')
-        button.clicked.connect(self.to_race)
-        self.grid.addWidget(button, 1, 2, 1, 1)
-        self.grid.setRowStretch(0, 1)
-        self.grid.setRowStretch(1, 2)
-        self.setPalette(self.palette)
-        self.setAutoFillBackground(True)
+        self.grid.addWidget(self.carbox, 0, 0, 1, 1)
+        self.grid.addWidget(self.teambox, 0, 1, 1, 1)
+        self.grid.addWidget(self.finanbox, 0, 2, 1, 1)
+        self.grid.addLayout(self.newsbox, 1, 0, 1, 2)
+        self.grid.addLayout(self.racebox, 1, 2)
+        self.grid.setRowStretch(0, 3)
+        self.grid.setRowStretch(1, 1)
         self.setLayout(self.grid)
+        #self.setPalette(self.palette)
+        #self.setAutoFillBackground(True)
 
     @Slot()
     def to_race(self):
@@ -146,8 +86,8 @@ class Interface_Principal(QWidget):
                 'Name': 'Mercedes-AMG Petronas F1',
                 'Principal': 'Toto Wolff',
                 'Color': {
-                    'Primary': QColor(127, 127, 127, 255),
-                    'Secondary': QColor(0, 0, 0, 255),
+                    'Primary': QColor(255, 40, 0, 255),
+                    'Secondary': QColor(255, 242, 0, 255),
                 }
             },
             'Pilot 1': 'L. Hamilton',
