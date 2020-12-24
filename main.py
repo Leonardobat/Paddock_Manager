@@ -1,12 +1,13 @@
 import sys
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QMainWindow, QApplication, QMenuBar
-from PySide6.QtGui import QAction
-from Interface.Interface_corrida import Interface_Corrida
+from PySide6.QtCore import Qt, Slot, Signal
+from PySide6.QtWidgets import QMainWindow, QApplication, QMenuBar, QStackedLayout, QWidget
+from PySide6.QtGui import QAction, QPalette, QColor
+from Interface.Corrida import Interface_Corrida
+from Interface.Principal import Interface_Principal
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, widget):
+    def __init__(self, widgets: tuple):
         QMainWindow.__init__(self)
         self.setWindowTitle("Paddock Manager")
 
@@ -19,20 +20,33 @@ class MainWindow(QMainWindow):
         exit_action.setShortcut("Ctrl+Q")
         exit_action.triggered.connect(self.exit_app)
         self.file_menu.addAction(exit_action)
-
         self.setMenuBar(self.menu)
-        self.setCentralWidget(widget)
+
+        widgets[0].race_mode.connect(self.race_mode)
+        widgets[1].normal_mode.connect(self.normal_mode)
+        self.widget = QWidget()
+        self.layout = QStackedLayout()
+        self.layout.addWidget(widgets[0])
+        self.layout.addWidget(widgets[1])
+        self.widget.setLayout(self.layout)
+        self.setCentralWidget(self.widget)
 
     @Slot()
     def exit_app(self, checked):
         QApplication.quit()
 
+    @Slot()
+    def race_mode(self):
+        self.layout.setCurrentIndex(1)
+
+    def normal_mode(self):
+        self.layout.setCurrentIndex(0)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = Interface_Corrida()
-    window = MainWindow(widget)
+    widgets = (Interface_Principal(), Interface_Corrida())
+    window = MainWindow(widgets)
     window.resize(800, 600)
     window.show()
-
     sys.exit(app.exec_())

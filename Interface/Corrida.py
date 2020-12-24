@@ -2,7 +2,7 @@
 
 from time import sleep
 from Corrida.motor_corrida import Racing_Engine
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QPainter, QColor
 from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
                                QAbstractItemView, QMainWindow, QPushButton,
@@ -12,6 +12,8 @@ from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
 
 
 class Interface_Corrida(QWidget):
+    normal_mode = Signal()
+
     def __init__(self):
         QWidget.__init__(self)
         self.items = 0
@@ -106,7 +108,7 @@ class Interface_Corrida(QWidget):
         self.dict_teams = {
             "Ferrari": {
                 "Primary": QColor(255, 40, 0, 255),
-                "Secondary": QColor(0, 0, 0, 255),
+                "Secondary": QColor(255, 242, 0, 255),
             },
             "Mercedes": {
                 "Primary": QColor(127, 127, 127, 255),
@@ -157,6 +159,8 @@ class Interface_Corrida(QWidget):
 
         # Right
         self.restart_button = QPushButton("Restart")
+        self.back_button = QPushButton("Back")
+        self.back_button.setEnabled(False)
         self.pit_button = QPushButton("Pit Stop")
         self.play_button = QPushButton("Play")
         self.play_button.setMinimumSize(120, 120)
@@ -218,7 +222,8 @@ class Interface_Corrida(QWidget):
         # Right Layout
         self.right_layout.addSpacing(25)
         self.right_layout.addWidget(self.restart_button)
-        self.right_layout.addSpacing(10)
+        self.right_layout.addWidget(self.back_button)
+        #self.right_layout.addSpacing(10)
         self.right_layout.addLayout(self.pilots_layout)
         self.right_layout.addStretch(1)
         self.right_layout.addWidget(self.play_button, 1)
@@ -237,6 +242,7 @@ class Interface_Corrida(QWidget):
         # Signals and Slots
         self.play_button.clicked.connect(self.run_race)
         self.restart_button.clicked.connect(self.restart_race)
+        self.back_button.clicked.connect(self.to_main)
         self.pit_button.clicked.connect(self.pit_stop)
         self.run.pressed.connect(self.update_table)
 
@@ -306,7 +312,7 @@ class Interface_Corrida(QWidget):
         self.table.setRowCount(0)
         self.items = 0
         for k in range(num_pilots):
-            pilot_name, lap, gap = times_sorted[k]
+            total_time, pilot_name, lap, gap = times_sorted[k]
 
             if k == 0:
                 gap_item = QTableWidgetItem("Leader")
@@ -340,7 +346,7 @@ class Interface_Corrida(QWidget):
             self.items += 1
 
         if self.dict_track["Raced Laps"] < self.dict_track["Total Laps"]:
-            sleep(0.1)
+            time.sleep(0.1)
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
                 self.dict_track["Name"],
@@ -359,6 +365,7 @@ class Interface_Corrida(QWidget):
         else:
             self.run_race()
             self.play_button.setEnabled(False)
+            self.back_button.setEnabled(True)
 
     def fill_table(self):
         data = self.dict_race
@@ -386,3 +393,7 @@ class Interface_Corrida(QWidget):
             self.table.setItem(self.items, 2, lap_item)
             self.table.setItem(self.items, 3, gap_item)
             self.items += 1
+
+    @Slot()
+    def to_main(self):
+        self.normal_mode.emit()
