@@ -114,7 +114,7 @@ class Racing_Engine():
     def lap_time(self, pilot_key):
         if self.data[pilot_key]["Tires"] > 0:
             car = self.stats[pilot_key]["Car"]
-            speed = sqrt(0.5 * (car + self.stats[pilot_key]["Speed"]))
+            speed = sqrt(car * 0.65 + self.stats[pilot_key]["Speed"] * 0.35)
             concentration = self.stats[pilot_key][
                 "Determination"] - self.stats[pilot_key]["Agressive"] / 10
             smoothness = self.stats[pilot_key]["Smoothness"] - (1 / car)
