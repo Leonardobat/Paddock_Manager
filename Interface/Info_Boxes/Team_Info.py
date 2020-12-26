@@ -55,6 +55,7 @@ class Team_Info(QWidget):
         self.layout.addWidget(QLabel('Reserva'), 6, 1, Qt.AlignLeft)
         self.layout.addWidget(self.pilot3, 6, 2, Qt.AlignCenter)
         self.setLayout(self.layout)
+        self.setMaximumWidth(250)
 
     @Slot()
     def update_info(self, data: dict):

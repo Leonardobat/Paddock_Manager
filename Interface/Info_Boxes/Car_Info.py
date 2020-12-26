@@ -13,6 +13,8 @@ class Car_Info(QWidget):
                               QColor(255, 255, 255, 255))
         self.palette.setColor(QPalette.Active, QPalette.WindowText,
                               QColor(0, 0, 0, 255))
+        self.setPalette(self.palette)
+        self.setAutoFillBackground(True)
 
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
@@ -48,8 +50,8 @@ class Car_Info(QWidget):
         self.layout.addWidget(QLabel('Geral'), 6, 1, Qt.AlignRight)
         self.layout.addWidget(self.overall, 6, 2, Qt.AlignCenter)
         self.setLayout(self.layout)
-        self.setPalette(self.palette)
-        self.setAutoFillBackground(True)
+
+        self.setMaximumWidth(250)
 
     @Slot()
     def update_info(self, data: dict):

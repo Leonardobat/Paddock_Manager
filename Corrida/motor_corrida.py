@@ -4,20 +4,18 @@ from math import sqrt, log
 
 
 class Racing_Engine():
-    def __init__(self, dict_pilot, dict_track):
-        self.times_sorted, self.info = [], []
+    def __init__(self, dict_pilot, dict_track, dict_race):
         self.stats, self.track = dict_pilot, dict_track
-        self.gen = SystemRandom()
+        self.gen, self.data = SystemRandom(), dict_race
         self.weather = self.track["Weather"]
         self.base_time = self.track["Base Time"] * 60
 
-    def run_a_lap(self, dict_race):
-        self.data = dict_race
-        self.times_sorted, self.info = [], []
-        self.racing()
-        return ([i[1:] for i in self.info], self.data)
+    def run_a_lap(self):
+        info = self.racing()
+        return ([i[1:] for i in info])
 
     def racing(self):
+        ret, times_sorted = [], []
         for pilot_key in self.data.keys():
             old_time = self.data[pilot_key]["Total Time"]
             if self.stats[pilot_key]["Owner"] == "IA":
@@ -26,17 +24,17 @@ class Racing_Engine():
             lap = self.lap_time(pilot_key)
             total_time = lap + old_time
             if self.data[pilot_key]["Pit-Stop"]:
-                self.pit_stop(pilot_key, total_time, lap)
+                times_sorted.append(self.pit_stop(pilot_key, total_time, lap))
             else:
-                self.times_sorted.append([total_time, pilot_key, lap])
+                times_sorted.append([total_time, pilot_key, lap])
 
-        self.times_sorted.sort()
+        times_sorted.sort()
         num_pilots = len(self.data.keys())
 
         for i in range(num_pilots):
-            total_time, pilot_key, lap = self.times_sorted[i]
+            total_time, pilot_key, lap = times_sorted[i]
             if i > 0:
-                prey_time, prey_key, prey_lap = self.times_sorted[i - 1]
+                prey_time, prey_key, prey_lap = times_sorted[i - 1]
                 gap = total_time - prey_time
                 if gap < 1:
                     overtake_diff = (self.track["Difficult"] - (
@@ -50,11 +48,11 @@ class Racing_Engine():
                         # Time from was overtook
                         prey_lap = prey_lap + 0.3
                         prey_time = total_time + 0.3
-                        prey_gap = prey_time - self.times_sorted[0][0]
+                        prey_gap = prey_time - times_sorted[0][0]
                         prey_gap_formated = "+{0}".format(
                             self.time_format(prey_gap))
                         prey_lap_formated = self.time_format(prey_lap)
-                        self.info[i - 1] = [
+                        ret[i - 1] = [
                             prey_time,
                             prey_key,
                             prey_lap_formated,
@@ -62,11 +60,11 @@ class Racing_Engine():
                         ]
 
                         # Time from who overtook
-                        leader_gap = total_time - self.times_sorted[0][0]
+                        leader_gap = total_time - times_sorted[0][0]
                         lap_formated = self.time_format(lap)
                         gap_formated = "+{0}".format(
                             self.time_format(leader_gap))
-                        self.info.append([
+                        ret.append([
                             total_time,
                             pilot_key,
                             lap_formated,
@@ -79,34 +77,35 @@ class Racing_Engine():
                         if gap < 0:
                             total_time = total_time - gap + 0.3
                         lap = prey_lap + 0.3
-                        leader_gap = total_time - self.times_sorted[0][0] + 0.3
+                        leader_gap = total_time - times_sorted[0][0] + 0.3
                         lap_formated = self.time_format(lap)
                         gap_formated = "+{0}".format(
                             self.time_format(leader_gap))
-                        self.info.append([
+                        ret.append([
                             total_time, pilot_key, lap_formated, gap_formated
                         ])
 
                 else:
-                    leader_gap = total_time - self.times_sorted[0][0]
+                    leader_gap = total_time - times_sorted[0][0]
                     lap_formated = self.time_format(lap)
                     gap_formated = "+{0}".format(self.time_format(leader_gap))
-                    self.info.append(
+                    ret.append(
                         [total_time, pilot_key, lap_formated, gap_formated])
             else:
                 lap_formated = self.time_format(lap)
-                self.info.append([total_time, pilot_key, lap_formated, 0])
+                ret.append([total_time, pilot_key, lap_formated, 0])
 
-            self.data[pilot_key]["Total Time"] = self.times_sorted[i][0]
+            self.data[pilot_key]["Total Time"] = times_sorted[i][0]
 
-        self.info.sort()
+        ret.sort()
+        return ret
 
-    def time_format(self, timming):
+    def time_format(self, timming: float) -> str:
         time_formated = "{0:.0f}:{1:.3f}".format((timming // 60),
                                                  (timming % 60))
         return time_formated
 
-    def lap_time(self, pilot_key):
+    def lap_time(self, pilot_key: str) -> float:
         if self.data[pilot_key]["Tires"] > 0:
             car = self.stats[pilot_key]["Car"]
             speed = sqrt(car * 0.65 + self.stats[pilot_key]["Speed"] * 0.35)
@@ -124,9 +123,9 @@ class Racing_Engine():
             lap = self.base_time * 4
         return lap
 
-    def pit_stop(self, pilot_key, total_time, lap):
+    def pit_stop(self, pilot_key: str, total_time: float, lap: float) -> list:
         # print(pilot_key, "Changed Tires")
         self.data[pilot_key]["Tires"] = 100
         self.data[pilot_key]["Pit-Stop"] = False
         self.data[pilot_key]["Pit-Stops"] += 1
-        self.times_sorted.append([total_time + 20, pilot_key, lap + 20])
+        return [total_time + 20, pilot_key, lap + 20]

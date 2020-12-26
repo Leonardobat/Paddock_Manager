@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(widgets[1])
         self.widget.setLayout(self.layout)
         self.setCentralWidget(self.widget)
+        self.setMaximumSize(780, 600)
 
     @Slot()
     def exit_app(self, checked):
@@ -47,6 +48,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     widgets = (Interface_Principal(), Interface_Corrida())
     window = MainWindow(widgets)
-    window.resize(800, 600)
+    window.resize(780, 600)
     window.show()
     sys.exit(app.exec_())

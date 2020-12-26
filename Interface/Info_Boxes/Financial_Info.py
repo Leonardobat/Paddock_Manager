@@ -58,6 +58,7 @@ class Financial_Info(QWidget):
         self.setLayout(self.layout)
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
+        self.setMaximumWidth(250)
 
     @Slot()
     def update_info(self, data: dict):

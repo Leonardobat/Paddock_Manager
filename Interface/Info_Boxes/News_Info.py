@@ -39,6 +39,7 @@ class News_Info(QWidget):
         self.layout.setRowStretch(0, 1)
         self.layout.setRowStretch(1, 3)
         self.setLayout(self.layout)
+        self.setMaximumHeight(250)
 
     @Slot()
     def update_news(self, data: dict):

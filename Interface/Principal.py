@@ -137,13 +137,6 @@ class Interface_Principal(QWidget):
                 (team['Sponsor_4'], ),
             ).fetchone()[0]
         }
-        del team['Color1']
-        del team['Color2']
-        del team['Sponsor_1']
-        del team['Sponsor_0']
-        del team['Sponsor_2']
-        del team['Sponsor_3']
-        del team['Sponsor_4']
 
         pilot1 = dict(
             self.db.execute(
@@ -172,3 +165,10 @@ class Interface_Principal(QWidget):
                 'Total_Laps': 67,
             }
         }
+        del team['Color1']
+        del team['Color2']
+        del team['Sponsor_1']
+        del team['Sponsor_0']
+        del team['Sponsor_2']
+        del team['Sponsor_3']
+        del team['Sponsor_4']

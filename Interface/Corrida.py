@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
                                QGridLayout)
 from DB.DB import get_db
 from .Race_Boxes.PilotBox import PilotBox
+from .Race_Boxes.TimingBox import TimingBox
 
 
 class Interface_Corrida(QWidget):
@@ -24,20 +25,7 @@ class Interface_Corrida(QWidget):
         self.play_race = True
 
         self.import_data()
-        self.dict_teams = {
-            "Ferrari": {
-                "Primary": QColor(255, 40, 0, 255),
-                "Secondary": QColor(255, 242, 0, 255),
-            },
-            "Mercedes": {
-                "Primary": QColor(127, 127, 127, 255),
-                "Secondary": QColor(0, 0, 0, 255),
-            },
-            "Willians": {
-                "Primary": QColor(135, 206, 235, 255),
-                "Secondary": QColor(255, 255, 255, 255),
-            },
-        }
+
         # Test data
         self.dict_track = {
             "Name": "Spa-Francochamps",
@@ -48,7 +36,8 @@ class Interface_Corrida(QWidget):
             "Weather": 0,
         }
 
-        self.racing = Racing_Engine(self.dict_pilot, self.dict_track)
+        self.racing = Racing_Engine(self.dict_pilot, self.dict_track,
+                                    self.dict_race)
 
         # Pilots
         for key in self.dict_pilot:
@@ -74,15 +63,9 @@ class Interface_Corrida(QWidget):
             self.dict_track["Raced Laps"],
             self.dict_track["Total_Laps"],
         )
+        self.TimmingTable = TimingBox(self.dict_pilot, self.dict_teams)
         self.label_track.setText(text)
         self.label_track.setAlignment(Qt.AlignRight)
-        self.table = QTableWidget()
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.table.setSelectionMode(QAbstractItemView.NoSelection)
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(
-            ["Pilot", "Team", "Lap Time", "Gap"])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.run = QPushButton("Run")
         self.run.setAutoRepeat(True)
 
@@ -109,7 +92,7 @@ class Interface_Corrida(QWidget):
 
         # Left Layout
         self.left_layout.addWidget(self.label_track)
-        self.left_layout.addWidget(self.table)
+        self.left_layout.addWidget(self.TimmingTable)
 
         # Set the layout to the QWidget
         self.layout.addLayout(self.left_layout, 0, 0, 1, 1)
@@ -122,10 +105,7 @@ class Interface_Corrida(QWidget):
         self.restart_button.clicked.connect(self.restart_race)
         self.back_button.clicked.connect(self.to_main)
         self.pit_button.clicked.connect(self.pit_stop)
-        self.run.pressed.connect(self.update_table)
-
-        # Fill example data
-        self.fill_table()
+        self.run.pressed.connect(self.update_data)
 
     @Slot()
     def restart_race(self):
@@ -139,6 +119,46 @@ class Interface_Corrida(QWidget):
         self.normal_mode.emit()
 
     @Slot()
+    def pit_stop(self):
+        self.dict_race[self.pilots[0]]["Pit-Stop"] = True
+        self.dict_race[self.pilots[1]]["Pit-Stop"] = True
+
+    @Slot()
+    def run_race(self):
+        # Virtual Button, pressed.
+        if self.play_race:
+            self.run.setDown(True)
+            self.play_race = False
+            self.play_button.setText("Pause")
+        else:
+            self.run.setDown(False)
+            self.play_race = True
+            self.play_button.setText("Play")
+
+    @Slot()
+    def update_data(self):
+        self.TimmingTable.update_table(self.racing.run_a_lap())
+
+        if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
+            self.dict_track["Raced Laps"] += 1
+            text = "{0} - {1}/{2}".format(
+                self.dict_track["Name"],
+                self.dict_track["Raced Laps"],
+                self.dict_track["Total_Laps"],
+            )
+            self.label_track.setText(text)
+            self.pilot1_box.update_info()
+            self.pilot2_box.update_info()
+            sleep(0.1)
+        else:
+            self.run_race()
+            self.play_button.setEnabled(False)
+            self.back_button.setEnabled(True)
+            self.list_positions = []
+            for i in range(self.items):
+                pilot = self.table.item(i, 0)
+                self.list_positions.append(pilot.text())
+
     def import_data(self):
         pilot_keys = self.db.execute('SELECT Name FROM pilots').fetchall()
         pilot_keys = [i[0] for i in pilot_keys]
@@ -176,110 +196,19 @@ class Interface_Corrida(QWidget):
                 "Pit-Stops": 0,
             }
 
-    @Slot()
-    def pit_stop(self):
-        self.dict_race[self.pilots[0]]["Pit-Stop"] = True
-        self.dict_race[self.pilots[1]]["Pit-Stop"] = True
-
-    @Slot()
-    def run_race(self):
-        if self.play_race:
-            self.run.setDown(True)
-            self.play_race = False
-            self.play_button.setText("Pause")
-        else:
-            self.run.setDown(False)
-            self.play_race = True
-            self.play_button.setText("Play")
-
-    @Slot()
-    def update_table(self):
-        times_sorted = []
-        times_sorted, self.dict_race = self.racing.run_a_lap(self.dict_race)
-        num_pilots = len(times_sorted)
-
-        self.table.setRowCount(0)
-        self.items = 0
-        for k in range(num_pilots):
-            pilot_name, lap, gap = times_sorted[k]
-
-            if k == 0:
-                gap_item = QTableWidgetItem("Leader")
-            else:
-                gap_item = QTableWidgetItem(gap)
-            gap_item.setTextAlignment(Qt.AlignCenter)
-            team = self.dict_pilot[pilot_name]["Team"]
-            team_item = QTableWidgetItem(team)
-            team_item.setTextAlignment(Qt.AlignCenter)
-            team_item.setBackground(self.dict_teams[team]["Primary"])
-            team_item.setForeground(self.dict_teams[team]["Secondary"])
-
-            lap_item = QTableWidgetItem(lap)
-            lap_item.setTextAlignment(Qt.AlignCenter)
-            pilot_item = QTableWidgetItem(pilot_name)
-            pilot_item.setTextAlignment(Qt.AlignCenter)
-
-            if self.items == 0:
-                pilot_item.setBackground(QColor(255, 215, 0, 127))
-            elif self.items == 1:
-                pilot_item.setBackground(QColor(169, 169, 169, 127))
-            elif self.items == 2:
-                pilot_item.setBackground(QColor(205, 127, 50, 127))
-            self.table.insertRow(self.items)
-            id_item = QTableWidgetItem("{0}º".format(self.items + 1))
-            self.table.setVerticalHeaderItem(self.items, id_item)
-            self.table.setItem(self.items, 0, pilot_item)
-            self.table.setItem(self.items, 1, team_item)
-            self.table.setItem(self.items, 2, lap_item)
-            self.table.setItem(self.items, 3, gap_item)
-            self.items += 1
-
-        if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
-            self.dict_track["Raced Laps"] += 1
-            text = "{0} - {1}/{2}".format(
-                self.dict_track["Name"],
-                self.dict_track["Raced Laps"],
-                self.dict_track["Total_Laps"],
-            )
-            self.label_track.setText(text)
-            self.pilot1_box.update_info()
-            self.pilot2_box.update_info()
-            sleep(0.1)
-        else:
-            self.run_race()
-            self.play_button.setEnabled(False)
-            self.back_button.setEnabled(True)
-            self.list_positions = []
-            for i in range(self.items):
-                pilot = self.table.item(i, 0)
-                self.list_positions.append(pilot.text())
-
-    def fill_table(self):
-        data = self.dict_race
-
-        for key in data.keys():
-            lap_item = QTableWidgetItem("0:0.000")
-            lap_item.setTextAlignment(Qt.AlignCenter)
-
-            gap_item = QTableWidgetItem("+0:0.000")
-            gap_item.setTextAlignment(Qt.AlignCenter)
-
-            team = self.dict_pilot[key]["Team"]
-            team_item = QTableWidgetItem(team)
-            team_item.setTextAlignment(Qt.AlignCenter)
-            team_item.setBackground(self.dict_teams[team]["Primary"])
-            team_item.setForeground(self.dict_teams[team]["Secondary"])
-
-            pilot_item = QTableWidgetItem(key)
-            pilot_item.setTextAlignment(Qt.AlignCenter)
-            self.table.insertRow(self.items)
-            id_item = QTableWidgetItem("{0}º".format(self.items + 1))
-            self.table.setVerticalHeaderItem(self.items, id_item)
-            self.table.setItem(self.items, 0, pilot_item)
-            self.table.setItem(self.items, 1, team_item)
-            self.table.setItem(self.items, 2, lap_item)
-            self.table.setItem(self.items, 3, gap_item)
-            self.items += 1
+        team = self.db.execute(
+            'SELECT Name, Color1, Color2 FROM teams').fetchall()
+        team = [dict(i) for i in team]
+        self.dict_teams = {}
+        for data in team:
+            name = data['Name']
+            self.dict_teams[name] = {}
+            self.dict_teams[name]['Primary'] = QColor(
+                int(data['Color1'][0:2], 16), int(data['Color1'][2:4], 16),
+                int(data['Color1'][4:6], 16), int(data['Color1'][6:], 16))
+            self.dict_teams[name]['Secondary'] = QColor(
+                int(data['Color2'][0:2], 16), int(data['Color2'][2:4], 16),
+                int(data['Color2'][4:6], 16), int(data['Color2'][6:], 16))
 
     @Slot()
     def finish_race(self):
