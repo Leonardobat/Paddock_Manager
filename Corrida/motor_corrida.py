@@ -12,9 +12,10 @@ class Racing_Engine():
 
     def run_a_lap(self):
         info = self.racing()
-        return ([i[1:] for i in info])
+        return ([i[1:] for i in info], self.msg[1:])
 
     def racing(self):
+        self.msg = ''
         ret, times_sorted = [], []
         for pilot_key in self.data.keys():
             old_time = self.data[pilot_key]["Total Time"]
@@ -70,8 +71,8 @@ class Racing_Engine():
                             lap_formated,
                             gap_formated,
                         ])
-                        # msg = str(pilot_key) + ' has passed ' + str(prey_key)
-                        # print(msg)
+                        self.msg += '\n{} passou {}'.format(
+                            pilot_key, prey_key)
 
                     else:
                         if gap < 0:
@@ -124,7 +125,7 @@ class Racing_Engine():
         return lap
 
     def pit_stop(self, pilot_key: str, total_time: float, lap: float) -> list:
-        # print(pilot_key, "Changed Tires")
+        self.msg += '\n{} trocou os Pneus'.format(pilot_key)
         self.data[pilot_key]["Tires"] = 100
         self.data[pilot_key]["Pit-Stop"] = False
         self.data[pilot_key]["Pit-Stops"] += 1

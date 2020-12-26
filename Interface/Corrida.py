@@ -4,11 +4,9 @@ from time import sleep
 from Corrida.motor_corrida import Racing_Engine
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QPainter, QColor
-from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
-                               QAbstractItemView, QMainWindow, QPushButton,
-                               QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget, QProgressBar, QSizePolicy, QFrame,
-                               QGridLayout)
+from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QPushButton,
+                               QVBoxLayout, QWidget, QProgressBar, QSizePolicy,
+                               QFrame, QGridLayout)
 from DB.DB import get_db
 from .Race_Boxes.PilotBox import PilotBox
 from .Race_Boxes.TimingBox import TimingBox
@@ -16,7 +14,7 @@ from .Race_Boxes.TimingBox import TimingBox
 
 class Interface_Corrida(QWidget):
     db = get_db()
-    normal_mode = Signal()
+    normal_mode = Signal(list)
 
     def __init__(self):
         QWidget.__init__(self)
@@ -24,32 +22,35 @@ class Interface_Corrida(QWidget):
         self.pilots = []
         self.play_race = True
 
+        # Test data
         self.import_data()
 
-        # Test data
-        self.dict_track = {
-            "Name": "Spa-Francochamps",
-            "Base Time": 1.7,
-            "Difficult": 0.3,
-            "Raced Laps": 0,
-            "Total_Laps": 67,
-            "Weather": 0,
-        }
-
+        self.TimmingTable = TimingBox(self.dict_pilot, self.dict_teams)
         self.racing = Racing_Engine(self.dict_pilot, self.dict_track,
                                     self.dict_race)
 
-        # Pilots
         for key in self.dict_pilot:
             if self.dict_pilot[key]["Owner"] != "IA":
                 self.pilots.append(key)
-
         self.pilot1_box = PilotBox(self.pilots[0],
                                    self.dict_race[self.pilots[0]])
         self.pilot2_box = PilotBox(self.pilots[1],
                                    self.dict_race[self.pilots[1]])
+
+        text = "{0} - {1}/{2}".format(
+            self.dict_track["Name"],
+            self.dict_track["Raced Laps"],
+            self.dict_track["Total_Laps"],
+        )
+        self.pilot1_box.update_info()
+        self.pilot2_box.update_info()
+
+        self.status = "Mensagens"
+        self.label_track = QLabel()
+        self.label_track.setText(text)
+        self.label_track.setAlignment(Qt.AlignRight)
+
         # Right
-        self.restart_button = QPushButton("Restart")
         self.back_button = QPushButton("Back")
         self.back_button.setEnabled(False)
         self.play_button = QPushButton("Play")
@@ -57,15 +58,6 @@ class Interface_Corrida(QWidget):
         self.pit_button = QPushButton("Pit Stop")
 
         # Left
-        self.label_track = QLabel()
-        text = "{0} - {1}/{2}".format(
-            self.dict_track["Name"],
-            self.dict_track["Raced Laps"],
-            self.dict_track["Total_Laps"],
-        )
-        self.TimmingTable = TimingBox(self.dict_pilot, self.dict_teams)
-        self.label_track.setText(text)
-        self.label_track.setAlignment(Qt.AlignRight)
         self.run = QPushButton("Run")
         self.run.setAutoRepeat(True)
 
@@ -73,15 +65,14 @@ class Interface_Corrida(QWidget):
         self.layout = QGridLayout()
         self.left_layout = QVBoxLayout()
         self.right_layout = QVBoxLayout()
-        self.label_info = QLabel("Dev Edition")
+        self.label_info = QLabel(self.status)
         self.label_info.setAlignment(Qt.AlignCenter)
         self.label_info.setFrameShape(QFrame.Panel)
 
         # Right Layout
         self.right_layout.addSpacing(25)
-        self.right_layout.addWidget(self.restart_button)
         self.right_layout.addWidget(self.back_button)
-        #self.right_layout.addSpacing(10)
+        self.right_layout.addSpacing(10)
         self.right_layout.addWidget(self.pilot1_box)
         self.right_layout.addSpacing(5)
         self.right_layout.addWidget(self.pilot2_box)
@@ -102,21 +93,9 @@ class Interface_Corrida(QWidget):
 
         # Signals and Slots
         self.play_button.clicked.connect(self.run_race)
-        self.restart_button.clicked.connect(self.restart_race)
-        self.back_button.clicked.connect(self.to_main)
+        self.back_button.clicked.connect(self.finish_race)
         self.pit_button.clicked.connect(self.pit_stop)
         self.run.pressed.connect(self.update_data)
-
-    @Slot()
-    def restart_race(self):
-        self.import_data()
-        self.dict_track["Raced Laps"] = 0
-        self.play_button.setEnabled(True)
-
-    @Slot()
-    def to_main(self):
-        self.finish_race()
-        self.normal_mode.emit()
 
     @Slot()
     def pit_stop(self):
@@ -137,8 +116,8 @@ class Interface_Corrida(QWidget):
 
     @Slot()
     def update_data(self):
-        self.TimmingTable.update_table(self.racing.run_a_lap())
-
+        timming, self.status = self.racing.run_a_lap()
+        self.TimmingTable.update_table(timming)
         if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
@@ -149,17 +128,33 @@ class Interface_Corrida(QWidget):
             self.label_track.setText(text)
             self.pilot1_box.update_info()
             self.pilot2_box.update_info()
+            if self.status != '':
+                text = 'Volta {}: {}'.format(self.dict_track["Raced Laps"],
+                                             self.status)
+                self.label_info.setText(text)
             sleep(0.1)
         else:
             self.run_race()
             self.play_button.setEnabled(False)
             self.back_button.setEnabled(True)
             self.list_positions = []
-            for i in range(self.items):
-                pilot = self.table.item(i, 0)
+            for i in range(self.TimmingTable.items):
+                pilot = self.TimmingTable.table.item(i, 0)
                 self.list_positions.append(pilot.text())
 
     def import_data(self):
+        track = self.db.execute(
+            'SELECT Name, Base_Time, Difficult, Total_Laps, Weather FROM tracks WHERE id = 1'
+        ).fetchone()
+        self.dict_track = {
+            "Name": track['Name'],
+            "Base Time": track['Base_Time'],
+            "Difficult": track['Difficult'],
+            "Raced Laps": 0,
+            "Total_Laps": track['Total_Laps'],
+            "Weather": track['Weather'],
+        }
+
         pilot_keys = self.db.execute('SELECT Name FROM pilots').fetchall()
         pilot_keys = [i[0] for i in pilot_keys]
         self.dict_race = {}
@@ -212,9 +207,6 @@ class Interface_Corrida(QWidget):
 
     @Slot()
     def finish_race(self):
-        del self.dict_race
-        del self.dict_pilot
-        self.list_positions
         list_results = []
         for k in range(len(self.list_positions)):
             if k == 0:
@@ -239,4 +231,5 @@ class Interface_Corrida(QWidget):
                 list_results.append((self.list_positions[9], 10, 1))
             else:
                 list_results.append((self.list_positions[k], k + 1, 0))
-        print(list_results)
+        self.normal_mode.emit(list_results)
+        self.destroy()

@@ -7,7 +7,7 @@ from Interface.Principal import Interface_Principal
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, widgets: tuple):
+    def __init__(self):
         QMainWindow.__init__(self)
         self.setWindowTitle("Paddock Manager")
 
@@ -21,14 +21,8 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.exit_app)
         self.file_menu.addAction(exit_action)
         self.setMenuBar(self.menu)
-
-        widgets[0].race_mode.connect(self.race_mode)
-        widgets[1].normal_mode.connect(self.normal_mode)
-        self.widget = QWidget()
-        self.layout = QStackedLayout()
-        self.layout.addWidget(widgets[0])
-        self.layout.addWidget(widgets[1])
-        self.widget.setLayout(self.layout)
+        self.widget = Interface_Principal()
+        self.widget.race_mode.connect(self.race_mode)
         self.setCentralWidget(self.widget)
         self.setMaximumSize(780, 600)
 
@@ -37,17 +31,23 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     @Slot()
-    def race_mode(self):
-        self.layout.setCurrentIndex(1)
+    def race_mode(self, title=None):
+        self.hide()
+        self.race = Interface_Corrida()
+        self.race.setWindowTitle('Corrida - SPA')
+        self.race.normal_mode.connect(self.normal_mode)
+        self.race.resize(780, 600)
+        self.race.show()
 
-    def normal_mode(self):
-        self.layout.setCurrentIndex(0)
+    @Slot()
+    def normal_mode(self, results: list):
+        self.show()
+        print(results)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widgets = (Interface_Principal(), Interface_Corrida())
-    window = MainWindow(widgets)
+    window = MainWindow()
     window.resize(780, 600)
     window.show()
     sys.exit(app.exec_())

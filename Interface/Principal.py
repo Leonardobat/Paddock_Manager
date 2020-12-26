@@ -154,21 +154,17 @@ class Interface_Principal(QWidget):
 
         pilot3 = {'Name': 'S. Vandoorne'}
 
+        track = self.db.execute(
+            'SELECT Name, Country, Total_Laps FROM tracks WHERE id = 1'
+        ).fetchone()
         self.data = {
             'Team': team,
             'Pilot 1': pilot1,
             'Pilot 2': pilot2,
             'Pilot 3': pilot3,
             'Next_Track': {
-                'Name1': 'Spa-Francochamps',
-                'Name2': 'GP da Bélgica',
-                'Total_Laps': 67,
+                'Name1': track['Name'],
+                'Name2': '{} GP'.format(track['Country']),
+                'Total_Laps': track['Total_Laps'],
             }
         }
-        del team['Color1']
-        del team['Color2']
-        del team['Sponsor_1']
-        del team['Sponsor_0']
-        del team['Sponsor_2']
-        del team['Sponsor_3']
-        del team['Sponsor_4']
