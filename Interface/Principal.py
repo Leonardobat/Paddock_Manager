@@ -82,8 +82,6 @@ class Interface_Principal(QWidget):
                                          int(team['Color2'][2:4], 16),
                                          int(team['Color2'][4:6], 16),
                                          int(team['Color2'][6:], 16))
-        del team['Color1']
-        del team['Color2']
 
         team['Motor'] = self.db.execute(
             'SELECT Power FROM motors WHERE id = ?',
@@ -99,6 +97,7 @@ class Interface_Principal(QWidget):
                 (team['Sponsor_0'], ),
             ).fetchone()[0]
         }
+
         team['Sponsor 2'] = {
             'Name':
             team['Sponsor_1'],
@@ -108,6 +107,7 @@ class Interface_Principal(QWidget):
                 (team['Sponsor_1'], ),
             ).fetchone()[0]
         }
+
         team['Sponsor 3'] = {
             'Name':
             team['Sponsor_2'],
@@ -117,6 +117,7 @@ class Interface_Principal(QWidget):
                 (team['Sponsor_2'], ),
             ).fetchone()[0]
         }
+
         team['Sponsor 4'] = {
             'Name':
             team['Sponsor_3'],
@@ -126,6 +127,7 @@ class Interface_Principal(QWidget):
                 (team['Sponsor_3'], ),
             ).fetchone()[0]
         }
+
         team['Sponsor 5'] = {
             'Name':
             team['Sponsor_4'],
@@ -135,19 +137,26 @@ class Interface_Principal(QWidget):
                 (team['Sponsor_4'], ),
             ).fetchone()[0]
         }
+        del team['Color1']
+        del team['Color2']
+        del team['Sponsor_1']
+        del team['Sponsor_0']
+        del team['Sponsor_2']
+        del team['Sponsor_3']
+        del team['Sponsor_4']
 
-        pilot1 = self.db.execute(
-            'SELECT * FROM pilots WHERE Team = ?',
-            (team['Name'], ),
-        ).fetchall()[0]
-        pilot1 = dict(pilot1)
+        pilot1 = dict(
+            self.db.execute(
+                'SELECT * FROM pilots WHERE Team = ?',
+                (team['Name'], ),
+            ).fetchall()[0])
         pilot1['Info'] = (0, 0, 0, 0)
 
-        pilot2 = self.db.execute(
-            'SELECT * FROM pilots WHERE Team = ?',
-            (team['Name'], ),
-        ).fetchall()[1]
-        pilot2 = dict(pilot2)
+        pilot2 = dict(
+            self.db.execute(
+                'SELECT * FROM pilots WHERE Team = ?',
+                (team['Name'], ),
+            ).fetchall()[1])
         pilot2['Info'] = (0, 0, 0, 0)
 
         pilot3 = {'Name': 'S. Vandoorne'}

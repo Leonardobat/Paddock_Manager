@@ -6,18 +6,18 @@ from math import sqrt, log
 class Racing_Engine():
     def __init__(self, dict_pilot, dict_track):
         self.times_sorted, self.info = [], []
-        self.data, self.stats, self.track = [], dict_pilot, dict_track
+        self.stats, self.track = dict_pilot, dict_track
         self.gen = SystemRandom()
         self.weather = self.track["Weather"]
         self.base_time = self.track["Base Time"] * 60
 
     def run_a_lap(self, dict_race):
         self.data = dict_race
+        self.times_sorted, self.info = [], []
         self.racing()
         return ([i[1:] for i in self.info], self.data)
 
     def racing(self):
-
         for pilot_key in self.data.keys():
             old_time = self.data[pilot_key]["Total Time"]
             if self.stats[pilot_key]["Owner"] == "IA":
@@ -29,10 +29,9 @@ class Racing_Engine():
                 self.pit_stop(pilot_key, total_time, lap)
             else:
                 self.times_sorted.append([total_time, pilot_key, lap])
-                self.info.append([0, pilot_key, 0, 0])
 
         self.times_sorted.sort()
-        num_pilots = len(self.times_sorted)
+        num_pilots = len(self.data.keys())
 
         for i in range(num_pilots):
             total_time, pilot_key, lap = self.times_sorted[i]
@@ -67,12 +66,12 @@ class Racing_Engine():
                         lap_formated = self.time_format(lap)
                         gap_formated = "+{0}".format(
                             self.time_format(leader_gap))
-                        self.info[i] = [
+                        self.info.append([
                             total_time,
                             pilot_key,
                             lap_formated,
                             gap_formated,
-                        ]
+                        ])
                         # msg = str(pilot_key) + ' has passed ' + str(prey_key)
                         # print(msg)
 
@@ -84,23 +83,19 @@ class Racing_Engine():
                         lap_formated = self.time_format(lap)
                         gap_formated = "+{0}".format(
                             self.time_format(leader_gap))
-                        self.info[i] = [
-                            total_time,
-                            pilot_key,
-                            lap_formated,
-                            gap_formated,
-                        ]
+                        self.info.append([
+                            total_time, pilot_key, lap_formated, gap_formated
+                        ])
 
                 else:
                     leader_gap = total_time - self.times_sorted[0][0]
                     lap_formated = self.time_format(lap)
                     gap_formated = "+{0}".format(self.time_format(leader_gap))
-                    self.info[i] = [
-                        total_time, pilot_key, lap_formated, gap_formated
-                    ]
+                    self.info.append(
+                        [total_time, pilot_key, lap_formated, gap_formated])
             else:
                 lap_formated = self.time_format(lap)
-                self.info[0] = [total_time, pilot_key, lap_formated, 0]
+                self.info.append([total_time, pilot_key, lap_formated, 0])
 
             self.data[pilot_key]["Total Time"] = self.times_sorted[i][0]
 
@@ -124,9 +119,9 @@ class Racing_Engine():
             lap = self.base_time - speed * 0.9 + log(101 - tires) / 8 + (
                 self.gen.random() * rhythm / concentration) / 10
             self.data[pilot_key]["Tires"] -= (10 / sqrt(smoothness)) * (
-                100 / self.track["Total_Laps"])
+                100 / self.track["Total_Laps"]) * 1.2
         else:
-            lap = self.track["Base Time"] * 10
+            lap = self.base_time * 4
         return lap
 
     def pit_stop(self, pilot_key, total_time, lap):
@@ -135,4 +130,3 @@ class Racing_Engine():
         self.data[pilot_key]["Pit-Stop"] = False
         self.data[pilot_key]["Pit-Stops"] += 1
         self.times_sorted.append([total_time + 20, pilot_key, lap + 20])
-        self.info.append([0, pilot_key, 0, 0])

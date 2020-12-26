@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
                                QWidget, QProgressBar, QSizePolicy, QFrame,
                                QGridLayout)
 from DB.DB import get_db
+from .Race_Boxes.PilotBox import PilotBox
 
 
 class Interface_Corrida(QWidget):
@@ -22,59 +23,7 @@ class Interface_Corrida(QWidget):
         self.pilots = []
         self.play_race = True
 
-        # Test data
-        self.dict_pilot = {
-            "C. Sainz": {
-                "Speed": 77,
-                "Smoothness": 83,
-                "Determination": 85,
-                "Agressive": 74,
-                "Overtaking": 77,
-                "Car": 78,
-                "Team": "Ferrari",
-                "Owner": "IA",
-            },
-            "C. Leclerc": {
-                "Speed": 80,
-                "Smoothness": 79,
-                "Determination": 87,
-                "Agressive": 81,
-                "Overtaking": 80,
-                "Car": 80,
-                "Team": "Ferrari",
-                "Owner": "IA",
-            },
-            "L. Hamilton": {
-                "Speed": 91,
-                "Smoothness": 93,
-                "Determination": 98,
-                "Agressive": 75,
-                "Overtaking": 90,
-                "Car": 95,
-                "Team": "Mercedes",
-                "Owner": "Player",
-            },
-            "V. Bottas": {
-                "Speed": 83,
-                "Smoothness": 87,
-                "Determination": 78,
-                "Agressive": 72,
-                "Overtaking": 82,
-                "Car": 95,
-                "Team": "Mercedes",
-                "Owner": "Player",
-            },
-            "G. Russell": {
-                "Speed": 85,
-                "Smoothness": 78,
-                "Determination": 90,
-                "Agressive": 78,
-                "Overtaking": 79,
-                "Car": 67,
-                "Team": "Willians",
-                "Owner": "IA",
-            },
-        }
+        self.import_data()
         self.dict_teams = {
             "Ferrari": {
                 "Primary": QColor(255, 40, 0, 255),
@@ -89,6 +38,7 @@ class Interface_Corrida(QWidget):
                 "Secondary": QColor(255, 255, 255, 255),
             },
         }
+        # Test data
         self.dict_track = {
             "Name": "Spa-Francochamps",
             "Base Time": 1.7,
@@ -98,40 +48,24 @@ class Interface_Corrida(QWidget):
             "Weather": 0,
         }
 
+        self.racing = Racing_Engine(self.dict_pilot, self.dict_track)
+
         # Pilots
         for key in self.dict_pilot:
             if self.dict_pilot[key]["Owner"] != "IA":
                 self.pilots.append(key)
 
-        self.pilot1_name = QLabel(self.pilots[0])
-        self.pilot1_name.setAlignment(Qt.AlignCenter)
-        self.pilot1_label_tire = QLabel("Tires:")
-        self.pilot1_tire_bar = QProgressBar()
-        self.pilot1_tire_bar.setSizePolicy(QSizePolicy.Preferred,
-                                           QSizePolicy.Minimum)
-        self.pilot1_tire_bar.setRange(0, 100)
-        self.pilot1_tire_bar.setValue(self.dict_race[self.pilots[0]]["Tires"])
-        self.pilot1_label_pitstops = QLabel("Pitstops: {}".format(
-            self.dict_race[self.pilots[0]]["Pit-Stops"]))
-
-        self.pilot2_name = QLabel(self.pilots[1])
-        self.pilot2_name.setAlignment(Qt.AlignCenter)
-        self.pilot2_label_tire = QLabel("Tires:")
-        self.pilot2_tire_bar = QProgressBar()
-        self.pilot2_tire_bar.setSizePolicy(QSizePolicy.Preferred,
-                                           QSizePolicy.Minimum)
-        self.pilot2_tire_bar.setRange(0, 100)
-        self.pilot2_tire_bar.setValue(self.dict_race[self.pilots[1]]["Tires"])
-        self.pilot2_label_pitstops = QLabel("Pitstops: {}".format(
-            self.dict_race[self.pilots[1]]["Pit-Stops"]))
-
+        self.pilot1_box = PilotBox(self.pilots[0],
+                                   self.dict_race[self.pilots[0]])
+        self.pilot2_box = PilotBox(self.pilots[1],
+                                   self.dict_race[self.pilots[1]])
         # Right
         self.restart_button = QPushButton("Restart")
         self.back_button = QPushButton("Back")
         self.back_button.setEnabled(False)
-        self.pit_button = QPushButton("Pit Stop")
         self.play_button = QPushButton("Play")
         self.play_button.setMinimumSize(120, 120)
+        self.pit_button = QPushButton("Pit Stop")
 
         # Left
         self.label_track = QLabel()
@@ -154,44 +88,22 @@ class Interface_Corrida(QWidget):
 
         # Layout
         self.layout = QGridLayout()
-        self.pilots_layout = QVBoxLayout()
-        self.pilot1_layout = QGridLayout()
-        self.pilot2_layout = QGridLayout()
         self.left_layout = QVBoxLayout()
         self.right_layout = QVBoxLayout()
         self.label_info = QLabel("Dev Edition")
         self.label_info.setAlignment(Qt.AlignCenter)
         self.label_info.setFrameShape(QFrame.Panel)
 
-        # Pilots Info Layout
-        self.box_1 = QFrame()
-        self.box_1.setFrameShape(QFrame.StyledPanel)
-        self.pilot1_layout.addWidget(self.box_1, 0, 0, 6, 3)
-        self.pilot1_layout.addWidget(self.pilot1_name, 1, 1)
-        self.pilot1_layout.addWidget(self.pilot1_label_tire, 2, 1)
-        self.pilot1_layout.addWidget(self.pilot1_tire_bar, 3, 1)
-        self.pilot1_layout.addWidget(self.pilot1_label_pitstops, 4, 1)
-
-        self.box_2 = QFrame()
-        self.box_2.setFrameShape(QFrame.StyledPanel)
-        self.pilot2_layout.addWidget(self.box_2, 0, 0, 6, 3)
-        self.pilot2_layout.addWidget(self.pilot2_name, 1, 1)
-        self.pilot2_layout.addWidget(self.pilot2_label_tire, 2, 1)
-        self.pilot2_layout.addWidget(self.pilot2_tire_bar, 3, 1)
-        self.pilot2_layout.addWidget(self.pilot2_label_pitstops, 4, 1)
-
-        self.pilots_layout.addLayout(self.pilot1_layout)
-        self.pilots_layout.addSpacing(5)
-        self.pilots_layout.addLayout(self.pilot2_layout)
-        self.pilots_layout.addSpacing(5)
-        self.pilots_layout.addWidget(self.pit_button, 0)
-
         # Right Layout
         self.right_layout.addSpacing(25)
         self.right_layout.addWidget(self.restart_button)
         self.right_layout.addWidget(self.back_button)
         #self.right_layout.addSpacing(10)
-        self.right_layout.addLayout(self.pilots_layout)
+        self.right_layout.addWidget(self.pilot1_box)
+        self.right_layout.addSpacing(5)
+        self.right_layout.addWidget(self.pilot2_box)
+        self.right_layout.addSpacing(5)
+        self.right_layout.addWidget(self.pit_button)
         self.right_layout.addStretch(1)
         self.right_layout.addWidget(self.play_button, 1)
 
@@ -216,6 +128,55 @@ class Interface_Corrida(QWidget):
         self.fill_table()
 
     @Slot()
+    def restart_race(self):
+        self.import_data()
+        self.dict_track["Raced Laps"] = 0
+        self.play_button.setEnabled(True)
+
+    @Slot()
+    def to_main(self):
+        self.finish_race()
+        self.normal_mode.emit()
+
+    @Slot()
+    def import_data(self):
+        pilot_keys = self.db.execute('SELECT Name FROM pilots').fetchall()
+        pilot_keys = [i[0] for i in pilot_keys]
+        self.dict_race = {}
+        self.dict_pilot = {}
+        for key in pilot_keys:
+            self.dict_pilot[key] = dict(
+                self.db.execute(
+                    'SELECT Speed, Smoothness, Determination,'
+                    ' Agressive, Overtaking, Team FROM pilots'
+                    ' WHERE Name = ?',
+                    (key, ),
+                ).fetchone())
+            team_data = list(
+                self.db.execute(
+                    'SELECT Aerodynamics, Electronics, Suspension,'
+                    ' motorid, Reliability FROM teams WHERE Name = ?',
+                    (self.dict_pilot[key]['Team'], ),
+                ).fetchone())
+            team_data[3] = self.db.execute(
+                'SELECT Power FROM motors WHERE id = ?',
+                (team_data[3], ),
+            ).fetchone()[0]
+
+            self.dict_pilot[key]['Car'] = sum(team_data[:4]) / 4
+            if self.dict_pilot[key]['Team'] != 'Mercedes':
+                self.dict_pilot[key]['Owner'] = 'IA'
+            else:
+                self.dict_pilot[key]['Owner'] = 'Player'
+            self.dict_race[key] = {
+                "Total Time": 0,
+                "Pit-Stop": False,
+                "Tires": 100,
+                "Car Health": team_data[4],
+                "Pit-Stops": 0,
+            }
+
+    @Slot()
     def pit_stop(self):
         self.dict_race[self.pilots[0]]["Pit-Stop"] = True
         self.dict_race[self.pilots[1]]["Pit-Stop"] = True
@@ -234,8 +195,7 @@ class Interface_Corrida(QWidget):
     @Slot()
     def update_table(self):
         times_sorted = []
-        times_sorted, self.dict_race = Racing_Engine(
-            self.dict_pilot, self.dict_track).run_a_lap(self.dict_race)
+        times_sorted, self.dict_race = self.racing.run_a_lap(self.dict_race)
         num_pilots = len(times_sorted)
 
         self.table.setRowCount(0)
@@ -275,7 +235,6 @@ class Interface_Corrida(QWidget):
             self.items += 1
 
         if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
-            sleep(0.2)
             self.dict_track["Raced Laps"] += 1
             text = "{0} - {1}/{2}".format(
                 self.dict_track["Name"],
@@ -283,18 +242,17 @@ class Interface_Corrida(QWidget):
                 self.dict_track["Total_Laps"],
             )
             self.label_track.setText(text)
-            self.pilot1_tire_bar.setValue(
-                self.dict_race[self.pilots[0]]["Tires"])
-            self.pilot2_tire_bar.setValue(
-                self.dict_race[self.pilots[1]]["Tires"])
-            self.pilot1_label_pitstops.setText("Pitstops: {0}".format(
-                self.dict_race[self.pilots[0]]["Pit-Stops"]))
-            self.pilot2_label_pitstops.setText("Pitstops: {0}".format(
-                self.dict_race[self.pilots[1]]["Pit-Stops"]))
+            self.pilot1_box.update_info()
+            self.pilot2_box.update_info()
+            sleep(0.1)
         else:
             self.run_race()
             self.play_button.setEnabled(False)
             self.back_button.setEnabled(True)
+            self.list_positions = []
+            for i in range(self.items):
+                pilot = self.table.item(i, 0)
+                self.list_positions.append(pilot.text())
 
     def fill_table(self):
         data = self.dict_race
@@ -324,42 +282,32 @@ class Interface_Corrida(QWidget):
             self.items += 1
 
     @Slot()
-    def to_main(self):
-        self.normal_mode.emit()
-
-    @Slot()
-    def clear_data(self):
-        pass
-
-    @Slot()
-    def import_data(self):
-        pilot_keys = self.db.execute('SELECT Name FROM pilots').fetchall()
-        pilot_keys = [i[0] for i in pilot_keys]
-        self.dict_race = {}
-        for key in pilot_keys:
-            self.dict_pilot[key] = dict(
-                self.db.execute(
-                    'SELECT (Speed, Smoothness, Determination,'
-                    ' Agressive, Overtaking, Team) FROM pilots'
-                    ' WHERE Name = ?',
-                    (key, ),
-                ).fetchone())
-
-            if self.dict_pilot[key]['Team'] != 'Mercerdes':
-                self.dict_pilot[key]['Owner'] = 'IA'
+    def finish_race(self):
+        del self.dict_race
+        del self.dict_pilot
+        self.list_positions
+        list_results = []
+        for k in range(len(self.list_positions)):
+            if k == 0:
+                list_results.append((self.list_positions[0], 1, 25))
+            elif k == 1:
+                list_results.append((self.list_positions[1], 2, 18))
+            elif k == 2:
+                list_results.append((self.list_positions[2], 3, 15))
+            elif k == 3:
+                list_results.append((self.list_positions[3], 4, 12))
+            elif k == 4:
+                list_results.append((self.list_positions[4], 5, 10))
+            elif k == 5:
+                list_results.append((self.list_positions[5], 6, 8))
+            elif k == 6:
+                list_results.append((self.list_positions[6], 7, 6))
+            elif k == 7:
+                list_results.append((self.list_positions[7], 8, 4))
+            elif k == 8:
+                list_results.append((self.list_positions[8], 9, 2))
+            elif k == 9:
+                list_results.append((self.list_positions[9], 10, 1))
             else:
-                self.dict_pilot[key]['Owner'] = 'Player'
-            self.dict_race[key] = {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": 100,
-                "Pit-Stops": 0,
-            }
-
-    @Slot()
-    def restart_race(self):
-        self.import_data()
-
-        self.dict_track["Raced Laps"] = 0
-        self.play_button.setEnabled(True)
+                list_results.append((self.list_positions[k], k + 1, 0))
+        print(list_results)
