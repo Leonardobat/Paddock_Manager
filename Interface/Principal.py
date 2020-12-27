@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
-
-from time import sleep
+import re
 from PySide6.QtCore import Qt, Slot, Signal
-from PySide6.QtGui import QPainter, QColor, QPalette, QFont
-from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel,
-                               QAbstractItemView, QMainWindow, QPushButton,
-                               QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget, QProgressBar, QSizePolicy, QFrame,
-                               QGridLayout)
+from PySide6.QtGui import QColor, QPalette
+from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel, QPushButton,
+                               QWidget, QFrame, QGridLayout)
 from .Info_Boxes.Car_Info import Car_Info
 from .Info_Boxes.Team_Info import Team_Info
 from .Info_Boxes.Financial_Info import Financial_Info
 from .Info_Boxes.News_Info import News_Info
 from .Info_Boxes.Race_Info import Race_Info
 from DB.DB import get_db
-import re
 
 
 class Interface_Principal(QWidget):

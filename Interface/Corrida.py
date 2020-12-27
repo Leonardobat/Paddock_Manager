@@ -3,10 +3,9 @@
 from time import sleep
 from Corrida.motor_corrida import Racing_Engine
 from PySide6.QtCore import Qt, Slot, Signal
-from PySide6.QtGui import QPainter, QColor
-from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QPushButton,
-                               QVBoxLayout, QWidget, QProgressBar, QSizePolicy,
-                               QFrame, QGridLayout)
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
+                               QWidget, QFrame, QGridLayout)
 from DB.DB import get_db
 from .Race_Boxes.PilotBox import PilotBox
 from .Race_Boxes.TimingBox import TimingBox
@@ -130,7 +129,7 @@ class Interface_Corrida(QWidget):
             self.pilot2_box.update_info()
             if self.status != '':
                 text = 'Volta {}:{}'.format(self.dict_track["Raced Laps"],
-                                             self.status)
+                                            self.status)
                 self.label_info.setText(text)
             sleep(0.1)
         else:
