@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 from time import sleep
-import re
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel, QPushButton,
                                QWidget, QFrame, QGridLayout, QVBoxLayout)
-from db import get_db
+from db import db
 from gui.boxes import CarInfo, TeamInfo, FinancialInfo, NewsInfo, RaceInfo, PilotBox, TimingBox
 from engine import RacingEngine
 
 
 class InterfacePrincipal(QWidget):
-    db = get_db()
+    database = db()
     race_mode = Signal(int)
     update_signal = Signal(dict)
 
@@ -21,14 +20,14 @@ class InterfacePrincipal(QWidget):
         self.import_data()
         self.palette = QPalette()
         self.palette.setColor(QPalette.Active, QPalette.Window,
-                              self.data['Team']['Primary_Color'])
+                              self.data['Team']['Primary'])
         self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              self.data['Team']['Secondary_Color'])
-        self.palette_alternative = QPalette()
-        self.palette_alternative.setColor(QPalette.Active, QPalette.Window,
-                                          self.data['Team']['Secondary_Color'])
-        self.palette_alternative.setColor(QPalette.Active, QPalette.WindowText,
-                                          self.data['Team']['Primary_Color'])
+                              self.data['Team']['Secondary'])
+        self.palette_alt = QPalette()
+        self.palette_alt.setColor(QPalette.Active, QPalette.Window,
+                                  self.data['Team']['Secondary'])
+        self.palette_alt.setColor(QPalette.Active, QPalette.WindowText,
+                                  self.data['Team']['Primary'])
 
         # Boxes
         self.carbox = CarInfo(self.data['Team'], self.palette)
@@ -62,24 +61,22 @@ class InterfacePrincipal(QWidget):
 
     @Slot()
     def update_info(self, results: list):
+        ## Create a DB CLASS!!!
 
         pilot1 = self.data['Pilot 1']['Name']
         pilot2 = self.data['Pilot 2']['Name']
 
         self.data['Pilot 1']['Info'] = self.update_pilot(pilot1, results)
         self.data['Pilot 2']['Info'] = self.update_pilot(pilot2, results)
-        self.data['msg'] = '{} venceu o {}.'.format(
-            results[0][0], self.data['Next_Track']['Name2'])
-
+        self.data['msg'] = f"{results[0][0]} venceu o" \
+            f" {self.data['Next_Track']['Name2']}."
         self.raceid += 1
-        track = self.db.execute(
-            'SELECT Name, Country, Total_Laps FROM tracks WHERE id = ?',
-            (self.raceid, )).fetchone()
+        track = self.database.track_info(self.raceid)
 
-        if re.search('a$', track['Country']) != None:
-            name2 = 'GP da {}'.format(track['Country'])
+        if track['Country'].endswith('a'):
+            name2 = f"GP da {track['Country']}"
         else:
-            name2 = 'GP de {}'.format(track['Country'])
+            name2 = f"GP de {track['Country']}"
 
         self.data['Next_Track'] = {
             'Name1': track['Name'],
@@ -110,96 +107,16 @@ class InterfacePrincipal(QWidget):
         return (pilot_old[0], victories, pilot_old[2], points)
 
     def import_data(self):
-        team = self.db.execute('SELECT * FROM teams WHERE id = 1').fetchone()
-        team = dict(team)
-        team['Primary_Color'] = QColor(int(team['Color1'][0:2], 16),
-                                       int(team['Color1'][2:4], 16),
-                                       int(team['Color1'][4:6], 16),
-                                       int(team['Color1'][6:], 16))
-        team['Secondary_Color'] = QColor(int(team['Color2'][0:2], 16),
-                                         int(team['Color2'][2:4], 16),
-                                         int(team['Color2'][4:6], 16),
-                                         int(team['Color2'][6:], 16))
-
-        team['Motor'] = self.db.execute(
-            'SELECT Power FROM motors WHERE id = ?',
-            (team['motorid'], ),
-        ).fetchone()[0]
-
-        team['Sponsor 1'] = {
-            'Name':
-            team['Sponsor_0'],
-            'Value':
-            self.db.execute(
-                'SELECT Value FROM sponsors WHERE Name = ?',
-                (team['Sponsor_0'], ),
-            ).fetchone()[0]
-        }
-
-        team['Sponsor 2'] = {
-            'Name':
-            team['Sponsor_1'],
-            'Value':
-            self.db.execute(
-                'SELECT Value FROM sponsors WHERE Name = ?',
-                (team['Sponsor_1'], ),
-            ).fetchone()[0]
-        }
-
-        team['Sponsor 3'] = {
-            'Name':
-            team['Sponsor_2'],
-            'Value':
-            self.db.execute(
-                'SELECT Value FROM sponsors WHERE Name = ?',
-                (team['Sponsor_2'], ),
-            ).fetchone()[0]
-        }
-
-        team['Sponsor 4'] = {
-            'Name':
-            team['Sponsor_3'],
-            'Value':
-            self.db.execute(
-                'SELECT Value FROM sponsors WHERE Name = ?',
-                (team['Sponsor_3'], ),
-            ).fetchone()[0]
-        }
-
-        team['Sponsor 5'] = {
-            'Name':
-            team['Sponsor_4'],
-            'Value':
-            self.db.execute(
-                'SELECT Value FROM sponsors WHERE Name = ?',
-                (team['Sponsor_4'], ),
-            ).fetchone()[0]
-        }
-
-        pilot1 = dict(
-            self.db.execute(
-                'SELECT * FROM pilots WHERE Team = ?',
-                (team['Name'], ),
-            ).fetchall()[0])
-        pilot1['Info'] = (0, 0, 0, 0)
-
-        pilot2 = dict(
-            self.db.execute(
-                'SELECT * FROM pilots WHERE Team = ?',
-                (team['Name'], ),
-            ).fetchall()[1])
-        pilot2['Info'] = (0, 0, 0, 0)
-
+        team = self.database.team_info(1)
+        pilot1 = self.database.pilot_info(team['Name'], 0)
+        pilot2 = self.database.pilot_info(team['Name'], 1)
         pilot3 = {'Name': 'S. Vandoorne'}
 
-        track = self.db.execute(
-            'SELECT Name, Country, Total_Laps FROM tracks WHERE id = ?',
-            (self.raceid, )).fetchone()
-
-        if re.search('a$', track['Country']) != None:
-            name2 = 'GP da {}'.format(track['Country'])
+        track = self.database.track_info(self.raceid)
+        if track['Country'].endswith('a'):
+            name2 = f"GP da {track['Country']}"
         else:
-            name2 = 'GP de {}'.format(track['Country'])
+            name2 = f"GP de {track['Country']}"
 
         self.data = {
             'Team': team,
@@ -215,52 +132,48 @@ class InterfacePrincipal(QWidget):
 
 
 class InterfaceCorrida(QWidget):
-    db = get_db()
+    database = db()
     normal_mode = Signal(list)
 
     def __init__(self, raceid: int):
         QWidget.__init__(self)
         self.items = 0
-        self.pilots = []
+        self.player_pilots = []
         self.play_race = True
 
         # Test data
         self.import_data(raceid)
 
-        self.TimmingTable = TimingBox(self.dict_pilot, self.dict_teams)
-        self.racing = RacingEngine(self.dict_pilot, self.dict_track,
-                                   self.dict_race)
+        self.TimmingTable = TimingBox(self.pilots, self.teams_colors)
+        self.racing = RacingEngine(self.pilots, self.track, self.pilots_status)
 
-        for key in self.dict_pilot:
-            if self.dict_pilot[key]["Owner"] != "IA":
-                self.pilots.append(key)
-        self.pilot1_box = PilotBox(self.pilots[0],
-                                   self.dict_race[self.pilots[0]])
-        self.pilot2_box = PilotBox(self.pilots[1],
-                                   self.dict_race[self.pilots[1]])
+        for key in self.pilots:
+            if self.pilots[key]['Owner'] != 'IA':
+                self.player_pilots.append(key)
+        self.pilot1_box = PilotBox(self.player_pilots[0],
+                                   self.pilots_status[self.player_pilots[0]])
+        self.pilot2_box = PilotBox(self.player_pilots[1],
+                                   self.pilots_status[self.player_pilots[1]])
 
-        text = "{0} - {1}/{2}".format(
-            self.dict_track["Name"],
-            self.dict_track["Raced Laps"],
-            self.dict_track["Total_Laps"],
-        )
+        text = f"{self.track['Name']} - {self.track['Raced Laps']}" \
+            f"/{self.track['Total_Laps']}"
         self.pilot1_box.update_info()
         self.pilot2_box.update_info()
 
-        self.status = "Mensagens"
+        self.status = 'Mensagens'
         self.label_track = QLabel()
         self.label_track.setText(text)
         self.label_track.setAlignment(Qt.AlignRight)
 
         # Right
-        self.back_button = QPushButton("Back")
+        self.back_button = QPushButton('Back')
         self.back_button.setEnabled(False)
-        self.play_button = QPushButton("Play")
+        self.play_button = QPushButton('Play')
         self.play_button.setMinimumSize(120, 120)
-        self.pit_button = QPushButton("Pit Stop")
+        self.pit_button = QPushButton('Pit Stop')
 
         # Left
-        self.run = QPushButton("Run")
+        self.run = QPushButton('Run')
         self.run.setAutoRepeat(True)
 
         # Layout
@@ -301,8 +214,8 @@ class InterfaceCorrida(QWidget):
 
     @Slot()
     def pit_stop(self):
-        self.dict_race[self.pilots[0]]["Pit-Stop"] = True
-        self.dict_race[self.pilots[1]]["Pit-Stop"] = True
+        self.pilots_status[self.player_pilots[0]]['Pit-Stop'] = True
+        self.pilots_status[self.player_pilots[1]]['Pit-Stop'] = True
 
     @Slot()
     def run_race(self):
@@ -310,29 +223,25 @@ class InterfaceCorrida(QWidget):
         if self.play_race:
             self.run.setDown(True)
             self.play_race = False
-            self.play_button.setText("Pause")
+            self.play_button.setText('Pause')
         else:
             self.run.setDown(False)
             self.play_race = True
-            self.play_button.setText("Play")
+            self.play_button.setText('Play')
 
     @Slot()
     def update_data(self):
-        timming, self.status = self.racing.run_a_lap()
+        timming, self.status = self.racing.run()
         self.TimmingTable.update_table(timming)
-        if self.dict_track["Raced Laps"] < self.dict_track["Total_Laps"]:
-            self.dict_track["Raced Laps"] += 1
-            text = "{0} - {1}/{2}".format(
-                self.dict_track["Name"],
-                self.dict_track["Raced Laps"],
-                self.dict_track["Total_Laps"],
-            )
+        if self.track['Raced Laps'] < self.track['Total_Laps']:
+            self.track['Raced Laps'] += 1
+            text = f"{self.track['Name']} - {self.track['Raced Laps']}" \
+            f"/{self.track['Total_Laps']}"
             self.label_track.setText(text)
             self.pilot1_box.update_info()
             self.pilot2_box.update_info()
             if self.status != '':
-                text = 'Volta {}:{}'.format(self.dict_track["Raced Laps"],
-                                            self.status)
+                text = f'Volta {self.track["Raced Laps"]}:{self.status}'
                 self.label_info.setText(text)
             sleep(0.1)
         else:
@@ -342,96 +251,57 @@ class InterfaceCorrida(QWidget):
             self.list_positions = []
             for i in range(self.TimmingTable.items):
                 pilot = self.TimmingTable.table.item(i, 0)
-                self.list_positions.append(pilot.text())
+                team = self.TimmingTable.table.item(i, 1)
+                self.list_positions.append((pilot.text(), team.text()))
 
     def import_data(self, raceid):
-        track = self.db.execute(
-            'SELECT Name, Base_Time, Difficult, Total_Laps,'
-            ' Weather FROM tracks WHERE id = ?', (raceid, )).fetchone()
-        self.dict_track = {
-            "Name": track['Name'],
-            "Base Time": track['Base_Time'],
-            "Difficult": track['Difficult'],
-            "Raced Laps": 0,
-            "Total_Laps": track['Total_Laps'],
-            "Weather": track['Weather'],
-        }
+        self.pilots_status = {}
+        self.pilots = {}
+        self.track = dict(self.database.track_info(raceid))
+        self.track['Raced Laps'] = 0
+        self.pilots = self.database.pilots_stats()
 
-        pilot_keys = self.db.execute('SELECT Name FROM pilots').fetchall()
-        pilot_keys = [i[0] for i in pilot_keys]
-        self.dict_race = {}
-        self.dict_pilot = {}
-        for key in pilot_keys:
-            self.dict_pilot[key] = dict(
-                self.db.execute(
-                    'SELECT Speed, Smoothness, Determination,'
-                    ' Agressive, Overtaking, Team FROM pilots'
-                    ' WHERE Name = ?',
-                    (key, ),
-                ).fetchone())
-            team_data = list(
-                self.db.execute(
-                    'SELECT Aerodynamics, Electronics, Suspension,'
-                    ' motorid, Reliability FROM teams WHERE Name = ?',
-                    (self.dict_pilot[key]['Team'], ),
-                ).fetchone())
-            team_data[3] = self.db.execute(
-                'SELECT Power FROM motors WHERE id = ?',
-                (team_data[3], ),
-            ).fetchone()[0]
-
-            self.dict_pilot[key]['Car'] = sum(team_data[:4]) / 4
-            if self.dict_pilot[key]['Team'] != 'Mercedes':
-                self.dict_pilot[key]['Owner'] = 'IA'
+        for key in self.pilots:
+            if self.pilots[key]['Team'] != 'Mercedes':
+                self.pilots[key]['Owner'] = 'IA'
             else:
-                self.dict_pilot[key]['Owner'] = 'Player'
-            self.dict_race[key] = {
-                "Total Time": 0,
-                "Pit-Stop": False,
-                "Tires": 100,
-                "Car Health": team_data[4],
-                "Pit-Stops": 0,
+                self.pilots[key]['Owner'] = 'Player'
+            self.pilots_status[key] = {
+                'Total Time': 0,
+                'Pit-Stop': False,
+                'Tires': 100,
+                'Car Health': 100,
+                'Pit-Stops': 0,
             }
 
-        team = self.db.execute(
-            'SELECT Name, Color1, Color2 FROM teams').fetchall()
-        team = [dict(i) for i in team]
-        self.dict_teams = {}
-        for data in team:
-            name = data['Name']
-            self.dict_teams[name] = {}
-            self.dict_teams[name]['Primary'] = QColor(
-                int(data['Color1'][0:2], 16), int(data['Color1'][2:4], 16),
-                int(data['Color1'][4:6], 16), int(data['Color1'][6:], 16))
-            self.dict_teams[name]['Secondary'] = QColor(
-                int(data['Color2'][0:2], 16), int(data['Color2'][2:4], 16),
-                int(data['Color2'][4:6], 16), int(data['Color2'][6:], 16))
+        self.teams_colors = self.database.teams_colors()
 
     @Slot()
     def finish_race(self):
         list_results = []
         for k in range(len(self.list_positions)):
+            pilot, team = self.list_positions[k]
             if k == 0:
-                list_results.append((self.list_positions[0], 1, 25))
+                list_results.append((pilot, 1, 25, team))
             elif k == 1:
-                list_results.append((self.list_positions[1], 2, 18))
+                list_results.append((pilot, 2, 18, team))
             elif k == 2:
-                list_results.append((self.list_positions[2], 3, 15))
+                list_results.append((pilot, 3, 15, team))
             elif k == 3:
-                list_results.append((self.list_positions[3], 4, 12))
+                list_results.append((pilot, 4, 12, team))
             elif k == 4:
-                list_results.append((self.list_positions[4], 5, 10))
+                list_results.append((pilot, 5, 10, team))
             elif k == 5:
-                list_results.append((self.list_positions[5], 6, 8))
+                list_results.append((pilot, 6, 8, team))
             elif k == 6:
-                list_results.append((self.list_positions[6], 7, 6))
+                list_results.append((pilot, 7, 6, team))
             elif k == 7:
-                list_results.append((self.list_positions[7], 8, 4))
+                list_results.append((pilot, 8, 4, team))
             elif k == 8:
-                list_results.append((self.list_positions[8], 9, 2))
+                list_results.append((pilot, 9, 2, team))
             elif k == 9:
-                list_results.append((self.list_positions[9], 10, 1))
+                list_results.append((pilot, 10, 1, team))
             else:
-                list_results.append((self.list_positions[k], k + 1, 0))
+                list_results.append((pilot, k + 1, 0, team))
         self.normal_mode.emit(list_results)
         self.close()

@@ -5,12 +5,14 @@ from PySide6.QtGui import QAction, QPalette, QColor
 from gui import InterfacePrincipal, InterfaceCorrida
 from gui.menus import Menus, PilotResults
 
+
 class MainWindow(QMainWindow):
+
     results_signal = Signal(list)
 
     def __init__(self):
-        self.results = {}
         QMainWindow.__init__(self)
+        self.results = []
         self.menu = Menus()
         self.setWindowTitle("Paddock Manager")
         self.menu.exit_action.triggered.connect(self.exit_app)
@@ -40,9 +42,7 @@ class MainWindow(QMainWindow):
     def normal_mode(self, results: list):
         self.show()
         self.results_signal.emit(results)
-        self.results[self.raceid] = {}
-        for result in results:
-            self.results[self.raceid][result[0]] = result[1]
+        self.results.append(results)
 
     @Slot()
     def show_results(self):

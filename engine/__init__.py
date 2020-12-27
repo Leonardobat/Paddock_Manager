@@ -4,17 +4,13 @@ from math import sqrt, log
 
 
 class RacingEngine():
-    def __init__(self, dict_pilot, dict_track, dict_race):
-        self.stats, self.track = dict_pilot, dict_track
-        self.gen, self.data = SystemRandom(), dict_race
+    def __init__(self, pilots: dict, track: dict, race: dict):
+        self.stats, self.track = pilots, track
+        self.gen, self.data = SystemRandom(), race
         self.weather = self.track["Weather"]
-        self.base_time = self.track["Base Time"] * 60
+        self.base_time = self.track["Base_Time"] * 60
 
-    def run_a_lap(self):
-        info = self.racing()
-        return ([i[1:] for i in info], self.msg)
-
-    def racing(self):
+    def run(self):
         self.msg = ''
         ret, times_sorted = [], []
         for pilot_key in self.data.keys():
@@ -99,7 +95,7 @@ class RacingEngine():
             self.data[pilot_key]["Total Time"] = times_sorted[i][0]
 
         ret.sort()
-        return ret
+        return ([i[1:] for i in ret], self.msg)
 
     def time_format(self, timming: float) -> str:
         time_formated = "{0:.0f}:{1:.3f}".format((timming // 60),

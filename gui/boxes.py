@@ -30,9 +30,9 @@ class CarInfo(QWidget):
         self.motor = QLabel(str(data['Motor']))
         self.eletronics = QLabel(str(data['Electronics']))
         self.suspension = QLabel(str(data['Suspension']))
-        self.overall = (data['Aerodynamics'] + data['Suspension'] +
-                        data['Motor'] + data['Electronics']) / 4
-        self.overall = QLabel(str(int(self.overall)))
+        overall = (data['Aerodynamics'] + data['Suspension'] + data['Motor'] +
+                   data['Electronics']) / 4
+        self.overall = QLabel(f"{overall:.0f}")
 
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -64,7 +64,7 @@ class CarInfo(QWidget):
         self.suspension.setText(str(data['Suspension']))
         overall = (data['Aerodynamics'] + data['Suspension'] + data['Motor'] +
                    data['Electronics']) / 4
-        self.overall.setText(str(int(overall)))
+        self.overall.setText(f"{overall:.0f}")
 
 
 class FinancialInfo(QWidget):
@@ -84,22 +84,17 @@ class FinancialInfo(QWidget):
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
 
-        self.cash = QLabel('£ {} Mi'.format(data['Budget']))
+        self.cash = QLabel(f"£ {data['Budget']} Mi")
         self.master = QLabel(data['Sponsor 1']['Name'])
-        self.master_value = QLabel('£ {} Mi'.format(
-            data['Sponsor 1']['Value']))
+        self.master_value = QLabel(f"£ {data['Sponsor 1']['Value']} Mi")
         self.sponsor1 = QLabel(data['Sponsor 2']['Name'])
-        self.sponsor1_value = QLabel('£ {} Mi'.format(
-            data['Sponsor 2']['Value']))
+        self.sponsor1_value = QLabel(f"£ {data['Sponsor 2']['Value']} Mi")
         self.sponsor2 = QLabel(data['Sponsor 3']['Name'])
-        self.sponsor2_value = QLabel('£ {} Mi'.format(
-            data['Sponsor 3']['Value']))
+        self.sponsor2_value = QLabel(f"£ {data['Sponsor 3']['Value']} Mi")
         self.sponsor3 = QLabel(data['Sponsor 4']['Name'])
-        self.sponsor3_value = QLabel('£ {} Mi'.format(
-            data['Sponsor 4']['Value']))
+        self.sponsor3_value = QLabel(f"£ {data['Sponsor 4']['Value']} Mi")
         self.sponsor4 = QLabel(data['Sponsor 5']['Name'])
-        self.sponsor4_value = QLabel('£ {} Mi'.format(
-            data['Sponsor 5']['Value']))
+        self.sponsor4_value = QLabel(f"£ {data['Sponsor 5']['Value']} Mi")
 
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -125,21 +120,17 @@ class FinancialInfo(QWidget):
     @Slot()
     def update_info(self, data: dict):
         data = data['Team']
-        self.cash.setText('£ {} Mi'.format(data['Budget']))
+        self.cash.setText(f"£ {data['Budget']} Mi")
         self.master.setText(data['Sponsor 1']['Name'])
-        self.master_value.setText('£ {} Mi'.format(data['Sponsor 1']['Value']))
+        self.master_value.setText(f"£ {data['Sponsor 1']['Value']} Mi")
         self.sponsor1.setText(data['Sponsor 2']['Name'])
-        self.sponsor1_value.setText('£ {} Mi'.format(
-            data['Sponsor 2']['Value']))
+        self.sponsor1_value.setText(f"£ {data['Sponsor 2']['Value']} Mi")
         self.sponsor2.setText(data['Sponsor 3']['Name'])
-        self.sponsor2_value.setText('£ {} Mi'.format(
-            data['Sponsor 3']['Value']))
+        self.sponsor2_value.setText(f"£ {data['Sponsor 3']['Value']} Mi")
         self.sponsor3.setText(data['Sponsor 4']['Name'])
-        self.sponsor3_value.setText('£ {} Mi'.format(
-            data['Sponsor 4']['Value']))
+        self.sponsor3_value.setText(f"£ {data['Sponsor 4']['Value']} Mi")
         self.sponsor4.setText(data['Sponsor 5']['Name'])
-        self.sponsor4_value.setText('£ {} Mi'.format(
-            data['Sponsor 5']['Value']))
+        self.sponsor4_value.setText(f"£ {data['Sponsor 5']['Value']} Mi")
 
 
 class NewsInfo(QWidget):
@@ -240,7 +231,7 @@ class TeamInfo(QWidget):
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Sunken)
-        self.team_name = QLabel(data['Team']['Name'])
+        self.team_name = QLabel(data['Team']['Name_Full'])
         self.team_name.setPalette(palette)
         self.team_name.setAlignment(Qt.AlignCenter)
         self.team_name.setAutoFillBackground(True)
@@ -372,7 +363,7 @@ class TimingBox(QWidget):
             elif self.items == 2:
                 pilot_item.setBackground(QColor(205, 127, 50, 127))
             self.table.insertRow(self.items)
-            id_item = QTableWidgetItem("{0}º".format(self.items + 1))
+            id_item = QTableWidgetItem(f"{(self.items + 1)}º")
             self.table.setVerticalHeaderItem(self.items, id_item)
             self.table.setItem(self.items, 0, pilot_item)
             self.table.setItem(self.items, 1, team_item)
@@ -397,7 +388,7 @@ class TimingBox(QWidget):
             pilot_item = QTableWidgetItem(key)
             pilot_item.setTextAlignment(Qt.AlignCenter)
             self.table.insertRow(self.items)
-            id_item = QTableWidgetItem("{0}º".format(self.items + 1))
+            id_item = QTableWidgetItem(f"{(self.items + 1)}º")
             self.table.setVerticalHeaderItem(self.items, id_item)
             self.table.setItem(self.items, 0, pilot_item)
             self.table.setItem(self.items, 1, team_item)
