@@ -5,9 +5,8 @@ from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel, QPushButton,
                                QWidget, QFrame, QGridLayout, QVBoxLayout)
-from boxes import CarInfo, TeamInfo, FinancialInfo, NewsInfo, RaceInfo
 from db import get_db
-from raceboxes import PilotBox, TimingBox
+from gui.boxes import CarInfo, TeamInfo, FinancialInfo, NewsInfo, RaceInfo, PilotBox, TimingBox
 from engine import RacingEngine
 
 
