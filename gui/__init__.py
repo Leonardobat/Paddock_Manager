@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel, QPushButton,
                                QWidget, QFrame, QGridLayout, QVBoxLayout)
 from db import db
 from gui.boxes import CarInfo, TeamInfo, FinancialInfo, NewsInfo, RaceInfo, PilotBox, TimingBox
-from engine import RacingEngine
+from engine import Racing
 
 
 class InterfacePrincipal(QWidget):
@@ -14,7 +14,8 @@ class InterfacePrincipal(QWidget):
     race_mode = Signal(int)
     update_signal = Signal(dict)
 
-    def __init__(self):
+    def __init__(self, team):
+        self.team = team
         self.raceid = 1
         QWidget.__init__(self)
         self.import_data()
@@ -107,7 +108,7 @@ class InterfacePrincipal(QWidget):
         return (pilot_old[0], victories, pilot_old[2], points)
 
     def import_data(self):
-        team = self.database.team_info(1)
+        team = self.database.team_info(self.team)
         pilot1 = self.database.pilot_info(team['Name'], 0)
         pilot2 = self.database.pilot_info(team['Name'], 1)
         pilot3 = {'Name': 'S. Vandoorne'}
@@ -135,8 +136,9 @@ class InterfaceCorrida(QWidget):
     database = db()
     normal_mode = Signal(list)
 
-    def __init__(self, raceid: int):
+    def __init__(self, raceid: int, team):
         QWidget.__init__(self)
+        self.team = team
         self.items = 0
         self.player_pilots = []
         self.play_race = True
@@ -145,7 +147,7 @@ class InterfaceCorrida(QWidget):
         self.import_data(raceid)
 
         self.TimmingTable = TimingBox(self.pilots, self.teams_colors)
-        self.racing = RacingEngine(self.pilots, self.track, self.pilots_status)
+        self.racing = Racing(self.pilots, self.track, self.pilots_status)
 
         for key in self.pilots:
             if self.pilots[key]['Owner'] != 'IA':
@@ -262,7 +264,7 @@ class InterfaceCorrida(QWidget):
         self.pilots = self.database.pilots_stats()
 
         for key in self.pilots:
-            if self.pilots[key]['Team'] != 'Mercedes':
+            if self.pilots[key]['Team'] != self.team:
                 self.pilots[key]['Owner'] = 'IA'
             else:
                 self.pilots[key]['Owner'] = 'Player'

@@ -30,16 +30,20 @@ class PilotResults(QWidget):
     def __init__(self, results: dict, palette=None):
         QWidget.__init__(self)
         self.pilots = self.database.pilots()
+        tracks = self.database.tracks()
         self.teams_colors = self.database.teams_colors()
         self.results = results
         self.items = 0
         self.table = QTableWidget()
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.NoSelection)
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(
-            ['Piloto', 'Equipe', 'Pts.', 'MON', 'SPA'])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setColumnCount(3 + len(tracks))
+        header = ['Pilot', 'Equipe', 'Pts.']
+        for track in tracks:
+            header.append(track)
+        self.table.setHorizontalHeaderLabels(header)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents)
 
         self.layout = QGridLayout()
         self.layout.addWidget(self.table, 0, 0)
@@ -47,7 +51,6 @@ class PilotResults(QWidget):
         self.fill_table()
         self.table.setSortingEnabled(True)
         self.table.sortItems(2, Qt.DescendingOrder)
-        return
 
     def fill_table(self):
         max_points = self.max_points()
@@ -85,15 +88,16 @@ class PilotResults(QWidget):
         return
 
     def max_points(self):
-        max_points = 0
+        _max_points = 0
         if self.results != []:
-            for _result in self.results:
-                _points = 0
-                for _pilot in _result:
-                    _points += _pilot[2]
-                    if _points > max_points:
-                        max_points = _points
-        return max_points
+            for result in self.results:
+                points = 0
+                for pilot in result:
+                    points += pilot[2]
+                    if points > _max_points:
+                        _max_points = points
+                        points = 0
+        return _max_points
 
 
 class TeamResults(QWidget):
@@ -102,14 +106,19 @@ class TeamResults(QWidget):
     def __init__(self, results: dict, palette=None):
         QWidget.__init__(self)
         self.teams_colors = self.database.teams_colors()
+        tracks = self.database.tracks()
         self.results = results
         self.items = 0
         self.table = QTableWidget()
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.NoSelection)
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(['Equipe', 'Pts.', 'MON', 'SPA'])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setColumnCount(2 + len(tracks))
+        header = ['Equipe', 'Pts.']
+        for track in tracks:
+            header.append(track)
+        self.table.setHorizontalHeaderLabels(header)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents)
 
         self.layout = QGridLayout()
         self.layout.addWidget(self.table, 0, 0)
@@ -117,7 +126,6 @@ class TeamResults(QWidget):
         self.fill_table()
         self.table.setSortingEnabled(True)
         self.table.sortItems(1, Qt.DescendingOrder)
-        return
 
     def fill_table(self):
         max_points = self.max_points()
@@ -127,7 +135,7 @@ class TeamResults(QWidget):
 
             self.table.insertRow(self.items)
             self.table.setItem(self.items, 0, team_item)
-
+            total_points = 0
             if self.results != []:
                 i, total_points = 0, 0
                 for result in self.results:
@@ -151,14 +159,14 @@ class TeamResults(QWidget):
         return
 
     def max_points(self):
-        max_points = 0
+        _max_points = 0
         if self.results != []:
             for team in self.teams_colors:
-                for _result in self.results:
-                    _points = 0
-                    for _pilot in _result:
-                        if _pilot[3] == team:
-                            _points += _pilot[2]
-                    if _points > max_points:
-                        max_points = _points
-        return max_points
+                points = 0
+                for result in self.results:
+                    for pilot in result:
+                        if pilot[3] == team:
+                            points += pilot[2]
+                if points > _max_points:
+                    _max_points = points
+        return _max_points

@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
     results_signal = Signal(list)
 
     def __init__(self):
+        self.team = 'Mercedes'
         QMainWindow.__init__(self)
         self.results = []
         self.menu = Menus()
@@ -19,7 +20,7 @@ class MainWindow(QMainWindow):
         self.menu.results_pilots_action.triggered.connect(self.pilots_results)
         self.menu.results_teams_action.triggered.connect(self.teams_results)
         self.setMenuBar(self.menu)
-        self.widget = InterfacePrincipal()
+        self.widget = InterfacePrincipal(self.team)
         self.widget.race_mode.connect(self.race_mode)
         self.results_signal.connect(self.widget.update_info)
         self.setCentralWidget(self.widget)
@@ -33,7 +34,7 @@ class MainWindow(QMainWindow):
     def race_mode(self, raceid):
         self.raceid = raceid
         self.hide()
-        self.race = InterfaceCorrida(self.raceid)
+        self.race = InterfaceCorrida(self.raceid, self.team)
         self.race.setWindowTitle('Corrida')
         self.race.normal_mode.connect(self.normal_mode)
         self.race.resize(780, 600)

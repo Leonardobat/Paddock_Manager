@@ -26,11 +26,17 @@ class db():
                                 (raceid, )).fetchone()
         return track
 
+    def tracks(self) -> list:
+        tracks = self.db.execute(
+            'SELECT Name FROM tracks ORDER BY id').fetchall()
+        tracks = [i[0] for i in tracks]
+        return tracks
+
     # From this all methods will be realocated to class save
 
-    def team_info(self, id: int) -> dict:
-        team = self.db.execute('SELECT * FROM teams WHERE id = ?',
-                               (id, )).fetchone()
+    def team_info(self, name: str) -> dict:
+        team = self.db.execute('SELECT * FROM teams WHERE Name = ?',
+                               (name, )).fetchone()
         team = dict(team)
         team['Primary'] = QColor(int(team['Color1'][0:2], 16),
                                  int(team['Color1'][2:4], 16),
@@ -41,10 +47,12 @@ class db():
                                    int(team['Color2'][4:6], 16),
                                    int(team['Color2'][6:], 16))
 
-        team['Motor'] = self.db.execute(
-            'SELECT Power FROM motors WHERE id = ?',
+        motor_info = self.db.execute(
+            'SELECT Manufacturer, Power FROM motors WHERE id = ?',
             (team['motorid'], ),
-        ).fetchone()[0]
+        ).fetchone()
+        team['Motor'] = motor_info['Power']
+        team['Manufacturer'] = motor_info['Manufacturer']
 
         team['Sponsor 1'] = self.get_sponsor(team, 0)
         team['Sponsor 2'] = self.get_sponsor(team, 1)

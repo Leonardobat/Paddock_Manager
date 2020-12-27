@@ -2,8 +2,7 @@
 from random import SystemRandom
 from math import sqrt, log
 
-
-class RacingEngine():
+class Racing():
     def __init__(self, pilots: dict, track: dict, race: dict):
         self.stats, self.track = pilots, track
         self.gen, self.data = SystemRandom(), race
@@ -134,3 +133,5 @@ class RacingEngine():
         lap += loss_time
         ret = [total_time, pilot_key, lap]
         return ret
+    
+    

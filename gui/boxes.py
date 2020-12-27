@@ -42,7 +42,8 @@ class CarInfo(QWidget):
         self.layout.addWidget(self.aero, 1, 2, Qt.AlignCenter)
         self.layout.addWidget(QLabel('Confiabilidade'), 2, 1, Qt.AlignRight)
         self.layout.addWidget(self.relia, 2, 2, Qt.AlignCenter)
-        self.layout.addWidget(QLabel('Motor'), 3, 1, Qt.AlignRight)
+        self.layout.addWidget(QLabel(f'Motor({data["Manufacturer"]})'), 3, 1,
+                              Qt.AlignRight)
         self.layout.addWidget(self.motor, 3, 2, Qt.AlignCenter)
         self.layout.addWidget(QLabel('Eletrônica'), 4, 1, Qt.AlignRight)
         self.layout.addWidget(self.eletronics, 4, 2, Qt.AlignCenter)
@@ -231,7 +232,7 @@ class TeamInfo(QWidget):
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Sunken)
-        self.team_name = QLabel(data['Team']['Name_Full'])
+        self.team_name = QLabel(data['Team']['Name'])
         self.team_name.setPalette(palette)
         self.team_name.setAlignment(Qt.AlignCenter)
         self.team_name.setAutoFillBackground(True)
