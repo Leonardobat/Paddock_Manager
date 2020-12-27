@@ -22,22 +22,22 @@ class Financial_Info(QWidget):
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
 
-        self.cash = QLabel('£ {} Mi'.format(data['Team']['Budget']))
-        self.master = QLabel(data['Team']['Sponsor 1']['Name'])
+        self.cash = QLabel('£ {} Mi'.format(data['Budget']))
+        self.master = QLabel(data['Sponsor 1']['Name'])
         self.master_value = QLabel('£ {} Mi'.format(
-            data['Team']['Sponsor 1']['Value']))
-        self.sponsor1 = QLabel(data['Team']['Sponsor 2']['Name'])
+            data['Sponsor 1']['Value']))
+        self.sponsor1 = QLabel(data['Sponsor 2']['Name'])
         self.sponsor1_value = QLabel('£ {} Mi'.format(
-            data['Team']['Sponsor 2']['Value']))
-        self.sponsor2 = QLabel(data['Team']['Sponsor 3']['Name'])
+            data['Sponsor 2']['Value']))
+        self.sponsor2 = QLabel(data['Sponsor 3']['Name'])
         self.sponsor2_value = QLabel('£ {} Mi'.format(
-            data['Team']['Sponsor 3']['Value']))
-        self.sponsor3 = QLabel(data['Team']['Sponsor 4']['Name'])
+            data['Sponsor 3']['Value']))
+        self.sponsor3 = QLabel(data['Sponsor 4']['Name'])
         self.sponsor3_value = QLabel('£ {} Mi'.format(
-            data['Team']['Sponsor 4']['Value']))
-        self.sponsor4 = QLabel(data['Team']['Sponsor 5']['Name'])
+            data['Sponsor 4']['Value']))
+        self.sponsor4 = QLabel(data['Sponsor 5']['Name'])
         self.sponsor4_value = QLabel('£ {} Mi'.format(
-            data['Team']['Sponsor 5']['Value']))
+            data['Sponsor 5']['Value']))
 
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -62,7 +62,8 @@ class Financial_Info(QWidget):
 
     @Slot()
     def update_info(self, data: dict):
-        self.cash.setText(data['Budget'])
+        data = data['Team']
+        self.cash.setText('£ {} Mi'.format(data['Budget']))
         self.master.setText(data['Sponsor 1']['Name'])
         self.master_value.setText('£ {} Mi'.format(data['Sponsor 1']['Value']))
         self.sponsor1.setText(data['Sponsor 2']['Name'])

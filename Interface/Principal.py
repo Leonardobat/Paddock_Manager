@@ -14,14 +14,16 @@ from .Info_Boxes.Financial_Info import Financial_Info
 from .Info_Boxes.News_Info import News_Info
 from .Info_Boxes.Race_Info import Race_Info
 from DB.DB import get_db
+import re
 
 
 class Interface_Principal(QWidget):
     db = get_db()
-    race_mode = Signal()
+    race_mode = Signal(int)
     update_signal = Signal(dict)
 
     def __init__(self):
+        self.raceid = 1
         QWidget.__init__(self)
         self.import_data()
         self.palette = QPalette()
@@ -36,9 +38,9 @@ class Interface_Principal(QWidget):
                                           self.data['Team']['Primary_Color'])
 
         # Boxes
-        self.carbox = Car_Info(self.data, self.palette)
+        self.carbox = Car_Info(self.data['Team'], self.palette)
         self.teambox = Team_Info(self.data, self.palette)
-        self.finanbox = Financial_Info(self.data, self.palette)
+        self.finanbox = Financial_Info(self.data['Team'], self.palette)
         self.newsbox = News_Info(None, self.palette)
         self.racebox = Race_Info(self.data, self.palette)
         self.update_signal.connect(self.carbox.update_info)
@@ -63,13 +65,56 @@ class Interface_Principal(QWidget):
 
     @Slot()
     def to_race(self):
-        self.race_mode.emit()
+        self.race_mode.emit(self.raceid)
 
     @Slot()
-    def update_info(self):
-        if 'msg' not in self.data:
-            self.data['msg'] = 'Não há nenhuma notícia nova.'
+    def update_info(self, results: list):
+
+        pilot1 = self.data['Pilot 1']['Name']
+        pilot2 = self.data['Pilot 2']['Name']
+
+        self.data['Pilot 1']['Info'] = self.update_pilot(pilot1, results)
+        self.data['Pilot 2']['Info'] = self.update_pilot(pilot2, results)
+        self.data['msg'] = '{} venceu o {}.'.format(
+            results[0][0], self.data['Next_Track']['Name2'])
+
+        self.raceid += 1
+        track = self.db.execute(
+            'SELECT Name, Country, Total_Laps FROM tracks WHERE id = ?',
+            (self.raceid, )).fetchone()
+
+        if re.search('a$', track['Country']) != None:
+            name2 = 'GP da {}'.format(track['Country'])
+        else:
+            name2 = 'GP de {}'.format(track['Country'])
+
+        self.data['Next_Track'] = {
+            'Name1': track['Name'],
+            'Name2': name2,
+            'Total_Laps': track['Total_Laps'],
+        }
+
         self.update_signal.emit(self.data)
+
+    def update_pilot(self, pilot: str, results: list):
+        if pilot == self.data['Pilot 1']['Name']:
+            pilot_old = self.data['Pilot 1']['Info']
+        else:
+            pilot_old = self.data['Pilot 2']['Info']
+
+        for result in results:
+            if pilot in result:
+                if result[2] > 0:
+                    points = result[2] + pilot_old[3]
+                else:
+                    points = pilot_old[3]
+                break
+
+        if result[2] == 25:
+            victories = pilot_old[1] + 1
+        else:
+            victories = pilot_old[1]
+        return (pilot_old[0], victories, pilot_old[2], points)
 
     def import_data(self):
         team = self.db.execute('SELECT * FROM teams WHERE id = 1').fetchone()
@@ -155,8 +200,14 @@ class Interface_Principal(QWidget):
         pilot3 = {'Name': 'S. Vandoorne'}
 
         track = self.db.execute(
-            'SELECT Name, Country, Total_Laps FROM tracks WHERE id = 1'
-        ).fetchone()
+            'SELECT Name, Country, Total_Laps FROM tracks WHERE id = ?',
+            (self.raceid, )).fetchone()
+
+        if re.search('a$', track['Country']) != None:
+            name2 = 'GP da {}'.format(track['Country'])
+        else:
+            name2 = 'GP de {}'.format(track['Country'])
+
         self.data = {
             'Team': team,
             'Pilot 1': pilot1,
@@ -164,7 +215,7 @@ class Interface_Principal(QWidget):
             'Pilot 3': pilot3,
             'Next_Track': {
                 'Name1': track['Name'],
-                'Name2': '{} GP'.format(track['Country']),
+                'Name2': name2,
                 'Total_Laps': track['Total_Laps'],
             }
         }

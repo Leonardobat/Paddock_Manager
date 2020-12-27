@@ -22,7 +22,7 @@ class Race_Info(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
-        text = '{Name1}\n{Name2}\n N° Vol. {Total_Laps}\n'.format(
+        text = '{Name2}\n{Name1}\n{Total_Laps} Voltas\n'.format(
             **data['Next_Track'])
         self.next_race = QLabel(text)
         self.next_race.setAlignment(Qt.AlignCenter)
@@ -41,6 +41,6 @@ class Race_Info(QWidget):
 
     @Slot()
     def update_info(self, data: dict):
-        text = '{Name1}\n{Name2}\n N° Vol. {Total_Laps}\n'.format(
+        text = '{Name2}\n{Name1}\n{Total_Laps} Voltas\n'.format(
             **data['Next_Track'])
-        self.text.setText(text)
+        self.next_race.setText(text)

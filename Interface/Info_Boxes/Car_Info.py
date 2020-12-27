@@ -23,14 +23,13 @@ class Car_Info(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
-        self.aero = QLabel(str(data['Team']['Aerodynamics']))
-        self.relia = QLabel(str(data['Team']['Reliability']))
-        self.motor = QLabel(str(data['Team']['Motor']))
-        self.eletronics = QLabel(str(data['Team']['Electronics']))
-        self.suspension = QLabel(str(data['Team']['Suspension']))
-        self.overall = (data['Team']['Aerodynamics'] +
-                        data['Team']['Suspension'] + data['Team']['Motor'] +
-                        data['Team']['Electronics']) / 4
+        self.aero = QLabel(str(data['Aerodynamics']))
+        self.relia = QLabel(str(data['Reliability']))
+        self.motor = QLabel(str(data['Motor']))
+        self.eletronics = QLabel(str(data['Electronics']))
+        self.suspension = QLabel(str(data['Suspension']))
+        self.overall = (data['Aerodynamics'] + data['Suspension'] +
+                        data['Motor'] + data['Electronics']) / 4
         self.overall = QLabel(str(int(self.overall)))
 
         self.layout = QGridLayout()
@@ -55,11 +54,12 @@ class Car_Info(QWidget):
 
     @Slot()
     def update_info(self, data: dict):
-        self.aero.setText(str(data['Car']['Aerodynamics']))
-        self.relia.setText(str(data['Car']['Reliability']))
-        self.motor.setText(str(data['Car']['Motor']))
-        self.eletronics.setText(str(data['Car']['Electronics']))
-        self.suspension.setText(str(data['Car']['Suspension']))
-        overall = (data['Car']['Aerodynamics'] + data['Car']['Suspension'] +
-                   data['Car']['Motor'] + data['Car']['Electronics']) / 4
+        data = data['Team']
+        self.aero.setText(str(data['Aerodynamics']))
+        self.relia.setText(str(data['Reliability']))
+        self.motor.setText(str(data['Motor']))
+        self.eletronics.setText(str(data['Electronics']))
+        self.suspension.setText(str(data['Suspension']))
+        overall = (data['Aerodynamics'] + data['Suspension'] + data['Motor'] +
+                   data['Electronics']) / 4
         self.overall.setText(str(int(overall)))

@@ -12,7 +12,7 @@ class Racing_Engine():
 
     def run_a_lap(self):
         info = self.racing()
-        return ([i[1:] for i in info], self.msg[1:])
+        return ([i[1:] for i in info], self.msg)
 
     def racing(self):
         self.msg = ''

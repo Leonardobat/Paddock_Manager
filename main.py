@@ -7,6 +7,8 @@ from Interface.Principal import Interface_Principal
 
 
 class MainWindow(QMainWindow):
+    results_signal = Signal(list)
+
     def __init__(self):
         QMainWindow.__init__(self)
         self.setWindowTitle("Paddock Manager")
@@ -23,6 +25,7 @@ class MainWindow(QMainWindow):
         self.setMenuBar(self.menu)
         self.widget = Interface_Principal()
         self.widget.race_mode.connect(self.race_mode)
+        self.results_signal.connect(self.widget.update_info)
         self.setCentralWidget(self.widget)
         self.setMaximumSize(780, 600)
 
@@ -31,10 +34,10 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     @Slot()
-    def race_mode(self, title=None):
+    def race_mode(self, raceid):
         self.hide()
-        self.race = Interface_Corrida()
-        self.race.setWindowTitle('Corrida - SPA')
+        self.race = Interface_Corrida(raceid)
+        self.race.setWindowTitle('Corrida')
         self.race.normal_mode.connect(self.normal_mode)
         self.race.resize(780, 600)
         self.race.show()
@@ -42,7 +45,7 @@ class MainWindow(QMainWindow):
     @Slot()
     def normal_mode(self, results: list):
         self.show()
-        print(results)
+        self.results_signal.emit(results)
 
 
 if __name__ == "__main__":

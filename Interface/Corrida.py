@@ -16,14 +16,14 @@ class Interface_Corrida(QWidget):
     db = get_db()
     normal_mode = Signal(list)
 
-    def __init__(self):
+    def __init__(self, raceid: int):
         QWidget.__init__(self)
         self.items = 0
         self.pilots = []
         self.play_race = True
 
         # Test data
-        self.import_data()
+        self.import_data(raceid)
 
         self.TimmingTable = TimingBox(self.dict_pilot, self.dict_teams)
         self.racing = Racing_Engine(self.dict_pilot, self.dict_track,
@@ -129,7 +129,7 @@ class Interface_Corrida(QWidget):
             self.pilot1_box.update_info()
             self.pilot2_box.update_info()
             if self.status != '':
-                text = 'Volta {}: {}'.format(self.dict_track["Raced Laps"],
+                text = 'Volta {}:{}'.format(self.dict_track["Raced Laps"],
                                              self.status)
                 self.label_info.setText(text)
             sleep(0.1)
@@ -142,10 +142,10 @@ class Interface_Corrida(QWidget):
                 pilot = self.TimmingTable.table.item(i, 0)
                 self.list_positions.append(pilot.text())
 
-    def import_data(self):
+    def import_data(self, raceid):
         track = self.db.execute(
-            'SELECT Name, Base_Time, Difficult, Total_Laps, Weather FROM tracks WHERE id = 1'
-        ).fetchone()
+            'SELECT Name, Base_Time, Difficult, Total_Laps,'
+            ' Weather FROM tracks WHERE id = ?', (raceid, )).fetchone()
         self.dict_track = {
             "Name": track['Name'],
             "Base Time": track['Base_Time'],
@@ -232,4 +232,4 @@ class Interface_Corrida(QWidget):
             else:
                 list_results.append((self.list_positions[k], k + 1, 0))
         self.normal_mode.emit(list_results)
-        self.destroy()
+        self.close()
