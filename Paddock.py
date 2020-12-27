@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtWidgets import QMainWindow, QApplication, QStackedLayout, QWidget
 from PySide6.QtGui import QAction, QPalette, QColor
 from gui import InterfacePrincipal, InterfaceCorrida
-from gui.menus import Menus, PilotResults
+from gui.menus import Menus, PilotResults, TeamResults
 
 
 class MainWindow(QMainWindow):
@@ -16,7 +16,8 @@ class MainWindow(QMainWindow):
         self.menu = Menus()
         self.setWindowTitle("Paddock Manager")
         self.menu.exit_action.triggered.connect(self.exit_app)
-        self.menu.results_pilots_action.triggered.connect(self.show_results)
+        self.menu.results_pilots_action.triggered.connect(self.pilots_results)
+        self.menu.results_teams_action.triggered.connect(self.teams_results)
         self.setMenuBar(self.menu)
         self.widget = InterfacePrincipal()
         self.widget.race_mode.connect(self.race_mode)
@@ -45,9 +46,16 @@ class MainWindow(QMainWindow):
         self.results.append(results)
 
     @Slot()
-    def show_results(self):
+    def pilots_results(self):
         self.results_pilots = PilotResults(self.results)
-        self.results_pilots.setWindowTitle('Resultados')
+        self.results_pilots.setWindowTitle('Resultados - Pilotos')
+        self.results_pilots.resize(780, 600)
+        self.results_pilots.show()
+
+    @Slot()
+    def teams_results(self):
+        self.results_pilots = TeamResults(self.results)
+        self.results_pilots.setWindowTitle('Resultados - Equipes')
         self.results_pilots.resize(780, 600)
         self.results_pilots.show()
 

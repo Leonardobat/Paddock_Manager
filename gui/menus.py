@@ -94,3 +94,71 @@ class PilotResults(QWidget):
                     if _points > max_points:
                         max_points = _points
         return max_points
+
+
+class TeamResults(QWidget):
+    database = db()
+
+    def __init__(self, results: dict, palette=None):
+        QWidget.__init__(self)
+        self.teams_colors = self.database.teams_colors()
+        self.results = results
+        self.items = 0
+        self.table = QTableWidget()
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(['Equipe', 'Pts.', 'MON', 'SPA'])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.layout = QGridLayout()
+        self.layout.addWidget(self.table, 0, 0)
+        self.setLayout(self.layout)
+        self.fill_table()
+        self.table.setSortingEnabled(True)
+        self.table.sortItems(1, Qt.DescendingOrder)
+        return
+
+    def fill_table(self):
+        max_points = self.max_points()
+        for team in self.teams_colors:
+            team_item = QTableWidgetItem(team)
+            team_item.setTextAlignment(Qt.AlignCenter)
+
+            self.table.insertRow(self.items)
+            self.table.setItem(self.items, 0, team_item)
+
+            if self.results != []:
+                i, total_points = 0, 0
+                for result in self.results:
+                    _points = 0
+                    for _pilot in result:
+                        if _pilot[3] == team:
+                            _points += _pilot[2]
+                    total_points += _points
+                    _result_item = QTableWidgetItem(f'{_points:02d}')
+                    _result_item.setTextAlignment(Qt.AlignCenter)
+                    self.table.setItem(self.items, 2 + i, _result_item)
+                    i += 1
+            if max_points > 99:
+                points_item = QTableWidgetItem((f'{total_points:03d}'))
+            else:
+                points_item = QTableWidgetItem((f'{total_points:02d}'))
+            points_item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(self.items, 1, points_item)
+            self.items += 1
+
+        return
+
+    def max_points(self):
+        max_points = 0
+        if self.results != []:
+            for team in self.teams_colors:
+                for _result in self.results:
+                    _points = 0
+                    for _pilot in _result:
+                        if _pilot[3] == team:
+                            _points += _pilot[2]
+                    if _points > max_points:
+                        max_points = _points
+        return max_points

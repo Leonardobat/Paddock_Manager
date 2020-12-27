@@ -166,7 +166,7 @@ class InterfaceCorrida(QWidget):
         self.label_track.setAlignment(Qt.AlignRight)
 
         # Right
-        self.back_button = QPushButton('Back')
+        self.back_button = QPushButton('Voltar')
         self.back_button.setEnabled(False)
         self.play_button = QPushButton('Play')
         self.play_button.setMinimumSize(120, 120)
@@ -243,7 +243,7 @@ class InterfaceCorrida(QWidget):
             if self.status != '':
                 text = f'Volta {self.track["Raced Laps"]}:{self.status}'
                 self.label_info.setText(text)
-            sleep(0.1)
+            sleep(0.2)
         else:
             self.run_race()
             self.play_button.setEnabled(False)
