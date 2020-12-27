@@ -3,7 +3,7 @@ from random import SystemRandom
 from math import sqrt, log
 
 
-class Racing_Engine():
+class RacingEngine():
     def __init__(self, dict_pilot, dict_track, dict_race):
         self.stats, self.track = dict_pilot, dict_track
         self.gen, self.data = SystemRandom(), dict_race

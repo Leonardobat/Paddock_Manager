@@ -1,10 +1,29 @@
+# -*- coding: utf-8 -*-
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QPalette, QColor
+from PySide6.QtGui import QPalette, QColor, QAction
 from PySide6.QtWidgets import (QTableWidgetItem, QWidget, QTableWidget,
-                               QGridLayout, QAbstractItemView, QHeaderView)
+                               QMenuBar, QGridLayout, QAbstractItemView,
+                               QHeaderView)
 
 
-class Results_Pilot(QWidget):
+class Menus(QMenuBar):
+    def __init__(self):
+        QMenuBar.__init__(self)
+        self.file_menu = self.addMenu("Arquivo")
+        self.results_menu = self.addMenu("Resultados")
+
+        # Exit QAction
+        self.exit_action = QAction("Sair", self)
+        self.exit_action.setShortcut("Ctrl+Q")
+        self.file_menu.addAction(self.exit_action)
+
+        self.results_pilots_action = QAction("Pilotos", self)
+        self.results_teams_action = QAction("Equipes", self)
+        self.results_menu.addAction(self.results_pilots_action)
+        self.results_menu.addAction(self.results_teams_action)
+
+
+class PilotResults(QWidget):
     def __init__(self, results: dict, palette=None):
         QWidget.__init__(self)
         self.results = results
@@ -39,7 +58,8 @@ class Results_Pilot(QWidget):
                 self.table.setItem(self.items, 1, team_item)
                 i = 0
                 for track in self.results:
-                    result_item = QTableWidgetItem(str(self.results[track][pilot]))
+                    result_item = QTableWidgetItem(
+                        str(self.results[track][pilot]))
                     self.table.setItem(self.items, 2 + i, result_item)
                     i += 1
                 self.items += 1
