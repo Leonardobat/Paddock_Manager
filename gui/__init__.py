@@ -61,8 +61,9 @@ class InterfacePrincipal(QWidget):
         self.race_mode.emit(self.raceid)
 
     @Slot()
-    def update_info(self, results: list):
-        ## Create a DB CLASS!!!
+    def update_info(self, results: list, team: dict):
+
+        self.data['Team']['Budget'] = team['Budget']
 
         pilot1 = self.data['Pilot 1']['Name']
         pilot2 = self.data['Pilot 2']['Name']

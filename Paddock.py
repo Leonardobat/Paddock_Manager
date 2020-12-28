@@ -4,11 +4,12 @@ from PySide6.QtWidgets import QMainWindow, QApplication, QStackedLayout, QWidget
 from PySide6.QtGui import QAction, QPalette, QColor
 from gui import InterfacePrincipal, InterfaceCorrida
 from gui.menus import Menus, PilotResults, TeamResults
+from engine import Financial
 
 
 class MainWindow(QMainWindow):
 
-    results_signal = Signal(list)
+    results_signal = Signal(list, dict)
 
     def __init__(self):
         self.team = 'Mercedes'
@@ -21,6 +22,7 @@ class MainWindow(QMainWindow):
         self.menu.results_teams_action.triggered.connect(self.teams_results)
         self.setMenuBar(self.menu)
         self.widget = InterfacePrincipal(self.team)
+        self.financial = Financial()
         self.widget.race_mode.connect(self.race_mode)
         self.results_signal.connect(self.widget.update_info)
         self.setCentralWidget(self.widget)
@@ -43,7 +45,12 @@ class MainWindow(QMainWindow):
     @Slot()
     def normal_mode(self, results: list):
         self.show()
-        self.results_signal.emit(results)
+        teams = self.financial.after_race()
+        for team in teams:
+            if team['Name'] == self.team:
+                financial = team
+                break
+        self.results_signal.emit(results, financial)
         self.results.append(results)
 
     @Slot()

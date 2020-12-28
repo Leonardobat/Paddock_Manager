@@ -25,7 +25,7 @@ CREATE TABLE pilots (
   Speed INTEGER,
   Team TEXT,
   Contract INTEGER,
-  Salary INTEGER
+  Salary REAL
 );
 
 CREATE TABLE teams (

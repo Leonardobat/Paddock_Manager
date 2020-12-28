@@ -85,7 +85,7 @@ class FinancialInfo(QWidget):
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
 
-        self.cash = QLabel(f"£ {data['Budget']} Mi")
+        self.budget = QLabel(f"£ {data['Budget']} Mi")
         self.master = QLabel(data['Sponsor 1']['Name'])
         self.master_value = QLabel(f"£ {data['Sponsor 1']['Value']} Mi")
         self.sponsor1 = QLabel(data['Sponsor 2']['Name'])
@@ -102,7 +102,7 @@ class FinancialInfo(QWidget):
         self.layout.addWidget(self.title, 0, 0, 1, 4)
         self.layout.addWidget(self.frame, 0, 0, 7, 4)
         self.layout.addWidget(QLabel('Caixa'), 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.cash, 1, 2, Qt.AlignCenter)
+        self.layout.addWidget(self.budget, 1, 2, Qt.AlignCenter)
         self.layout.addWidget(self.master, 2, 1, Qt.AlignLeft)
         self.layout.addWidget(self.master_value, 2, 2, Qt.AlignCenter)
         self.layout.addWidget(self.sponsor1, 3, 1, Qt.AlignLeft)
@@ -121,7 +121,7 @@ class FinancialInfo(QWidget):
     @Slot()
     def update_info(self, data: dict):
         data = data['Team']
-        self.cash.setText(f"£ {data['Budget']} Mi")
+        self.budget.setText(f"£ {data['Budget']:.2f} Mi")
         self.master.setText(data['Sponsor 1']['Name'])
         self.master_value.setText(f"£ {data['Sponsor 1']['Value']} Mi")
         self.sponsor1.setText(data['Sponsor 2']['Name'])

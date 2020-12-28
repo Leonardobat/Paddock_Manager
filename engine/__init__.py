@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from random import SystemRandom
 from math import sqrt, log
+from db import db
+
 
 class Racing():
     def __init__(self, pilots: dict, track: dict, race: dict):
@@ -133,5 +135,17 @@ class Racing():
         lap += loss_time
         ret = [total_time, pilot_key, lap]
         return ret
-    
-    
+
+
+class Financial():
+    database = db()
+
+    def __init__(self):
+        self.teams = self.database.teams_financial()
+
+    def after_race(self):
+        for team in self.teams:
+            salary = team['Pilot 1'] + team['Pilot 2']
+            team['Budget'] -= salary
+            
+        return self.teams

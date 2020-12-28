@@ -65,11 +65,11 @@ class db():
     def get_sponsor(self, team: dict, id: int) -> dict:
         sponsor = {
             'Name':
-            team['Sponsor_{}'.format(id)],
+            team[f'Sponsor_{id}'],
             'Value':
             self.db.execute(
                 'SELECT Value FROM sponsors WHERE Name = ?',
-                (team['Sponsor_{}'.format(id)], ),
+                (team[f'Sponsor_{id}'], ),
             ).fetchone()[0],
         }
         return sponsor
@@ -106,6 +106,20 @@ class db():
                     break
 
         return teams_overall
+
+    def teams_financial(self) -> list:
+        teams = self.db.execute('SELECT Name, Budget FROM teams').fetchall()
+        pilots = self.db.execute('SELECT Salary, Team FROM pilots').fetchall()
+        teams = [dict(team) for team in teams]
+        for team in teams:
+            i = 1
+            for pilot in pilots:
+                if team['Name'] == pilot['Team']:
+                    team[f'Pilot {i}'] = pilot['Salary']
+                    i += 1
+                if i > 2:
+                    break
+        return teams
 
     def pilot_info(self, team: str, id) -> dict:
         pilot = self.db.execute('SELECT * FROM pilots WHERE Team = ?',
