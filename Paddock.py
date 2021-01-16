@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtWidgets import QMainWindow, QApplication, QStackedLayout, QWidget
-from PySide6.QtGui import QAction, QPalette, QColor
+from PySide6.QtGui import QAction, QPalette, QColor, QFont
 from gui import InterfacePrincipal, InterfaceCorrida
 from gui.menus import Menus, PilotResults, TeamResults
 from engine import Financial
@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
         self.widget.race_mode.connect(self.race_mode)
         self.results_signal.connect(self.widget.update_info)
         self.setCentralWidget(self.widget)
-        self.setMaximumSize(780, 600)
+        #self.setMaximumSize(780, 600)
 
     @Slot()
     def exit_app(self, checked):

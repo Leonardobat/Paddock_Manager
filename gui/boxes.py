@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QPalette, QFont, QColor
+from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (QTableWidgetItem, QWidget, QTableWidget,
                                QGridLayout, QAbstractItemView, QHeaderView,
                                QLabel, QPushButton, QFrame, QProgressBar,
-                               QVBoxLayout)
+                               QVBoxLayout, QSizePolicy)
+
+from gui.acessories import BasicColors, DetailsFont, TitleFont, EmphasisFont
 
 
 class CarInfo(QWidget):
     def __init__(self, data: dict, palette):
         QWidget.__init__(self)
-        self.palette = QPalette()
-        self.palette.setColor(QPalette.Active, QPalette.Window,
-                              QColor(255, 255, 255, 255))
-        self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              QColor(0, 0, 0, 255))
+        self.palette = BasicColors()
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
-
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Sunken)
@@ -25,6 +22,7 @@ class CarInfo(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
+        self.title.setFont(TitleFont())
         self.aero = QLabel(str(data['Aerodynamics']))
         self.relia = QLabel(str(data['Reliability']))
         self.motor = QLabel(str(data['Motor']))
@@ -42,7 +40,7 @@ class CarInfo(QWidget):
         self.layout.addWidget(self.aero, 1, 2, Qt.AlignCenter)
         self.layout.addWidget(QLabel('Confiabilidade'), 2, 1, Qt.AlignRight)
         self.layout.addWidget(self.relia, 2, 2, Qt.AlignCenter)
-        self.layout.addWidget(QLabel(f'Motor({data["Manufacturer"]})'), 3, 1,
+        self.layout.addWidget(QLabel(f'Motor - {data["Manufacturer"]}'), 3, 1,
                               Qt.AlignRight)
         self.layout.addWidget(self.motor, 3, 2, Qt.AlignCenter)
         self.layout.addWidget(QLabel('Eletrônica'), 4, 1, Qt.AlignRight)
@@ -52,8 +50,6 @@ class CarInfo(QWidget):
         self.layout.addWidget(QLabel('Geral'), 6, 1, Qt.AlignRight)
         self.layout.addWidget(self.overall, 6, 2, Qt.AlignCenter)
         self.setLayout(self.layout)
-
-        self.setMaximumWidth(250)
 
     @Slot()
     def update_info(self, data: dict):
@@ -71,12 +67,8 @@ class CarInfo(QWidget):
 class FinancialInfo(QWidget):
     def __init__(self, data, palette):
         QWidget.__init__(self)
-        self.palette = QPalette()
-        self.palette.setColor(QPalette.Active, QPalette.Window,
-                              QColor(255, 255, 255, 255))
-        self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              QColor(0, 0, 0, 255))
-
+        self.palette = BasicColors()
+        self.smallfont = DetailsFont()
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Sunken)
@@ -84,7 +76,8 @@ class FinancialInfo(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
-
+        self.title.setFont(TitleFont())
+        
         self.budget = QLabel(f"£ {data['Budget']} Mi")
         self.master = QLabel(data['Sponsor 1']['Name'])
         self.master_value = QLabel(f"£ {data['Sponsor 1']['Value']} Mi")
@@ -96,6 +89,18 @@ class FinancialInfo(QWidget):
         self.sponsor3_value = QLabel(f"£ {data['Sponsor 4']['Value']} Mi")
         self.sponsor4 = QLabel(data['Sponsor 5']['Name'])
         self.sponsor4_value = QLabel(f"£ {data['Sponsor 5']['Value']} Mi")
+        
+        self.master.setFont(self.smallfont)
+        self.sponsor1.setFont(self.smallfont)
+        self.sponsor2.setFont(self.smallfont)
+        self.sponsor3.setFont(self.smallfont)
+        self.sponsor4.setFont(self.smallfont)
+        self.master_value.setFont(self.smallfont)
+        self.sponsor1_value.setFont(self.smallfont)
+        self.sponsor2_value.setFont(self.smallfont)
+        self.sponsor3_value.setFont(self.smallfont)
+        self.sponsor4_value.setFont(self.smallfont)
+
 
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -116,7 +121,6 @@ class FinancialInfo(QWidget):
         self.setLayout(self.layout)
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
-        self.setMaximumWidth(250)
 
     @Slot()
     def update_info(self, data: dict):
@@ -137,11 +141,7 @@ class FinancialInfo(QWidget):
 class NewsInfo(QWidget):
     def __init__(self, msg, palette):
         QWidget.__init__(self)
-        self.palette = QPalette()
-        self.palette.setColor(QPalette.Active, QPalette.Window,
-                              QColor(255, 255, 255, 255))
-        self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              QColor(0, 0, 0, 255))
+        self.palette = BasicColors()
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
         self.setContentsMargins(0, 0, 0, 0)
@@ -150,6 +150,7 @@ class NewsInfo(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
+        self.title.setFont(TitleFont())
         if msg is not None:
             self.news = QLabel(msg)
         else:
@@ -177,14 +178,9 @@ class NewsInfo(QWidget):
 class RaceInfo(QWidget):
     def __init__(self, data, palette):
         QWidget.__init__(self)
-        self.palette = QPalette()
-        self.palette.setColor(QPalette.Active, QPalette.Window,
-                              QColor(255, 255, 255, 255))
-        self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              QColor(0, 0, 0, 255))
+        self.palette = BasicColors()
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
-
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Sunken)
@@ -192,22 +188,23 @@ class RaceInfo(QWidget):
         self.title.setPalette(palette)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setAutoFillBackground(True)
+        self.title.setFont(TitleFont())
+
         text = '{Name2}\n{Name1}\n{Total_Laps} Voltas\n'.format(
             **data['Next_Track'])
         self.next_race = QLabel(text)
         self.next_race.setAlignment(Qt.AlignCenter)
         self.race_button = QPushButton('Corrida')
+        self.race_button.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
 
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setRowStretch(0, 1)
-        self.layout.setRowStretch(1, 2)
-        self.layout.setRowStretch(2, 1)
         self.layout.addWidget(self.title, 0, 0)
         self.layout.addWidget(self.frame, 0, 0, 3, 1)
         self.layout.addWidget(self.next_race, 1, 0)
         self.layout.addWidget(self.race_button, 2, 0)
         self.setLayout(self.layout)
+
 
     @Slot()
     def update_info(self, data: dict):
@@ -219,16 +216,10 @@ class RaceInfo(QWidget):
 class TeamInfo(QWidget):
     def __init__(self, data, palette):
         QWidget.__init__(self)
-        self.font = QFont()
-        self.font.setItalic(True)
-        self.palette = QPalette()
-        self.palette.setColor(QPalette.Active, QPalette.Window,
-                              QColor(255, 255, 255, 255))
-        self.palette.setColor(QPalette.Active, QPalette.WindowText,
-                              QColor(0, 0, 0, 255))
+        self.palette = BasicColors()
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
-
+        
         self.frame = QFrame()
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Sunken)
@@ -236,8 +227,9 @@ class TeamInfo(QWidget):
         self.team_name.setPalette(palette)
         self.team_name.setAlignment(Qt.AlignCenter)
         self.team_name.setAutoFillBackground(True)
+        self.team_name.setFont(TitleFont())
         self.user_name = QLabel(data['Team']['Principal'])
-        self.user_name.setFont(self.font)
+        self.user_name.setFont(EmphasisFont())
         self.pilot1 = QLabel(data['Pilot 1']['Name'])
         self.pilot2 = QLabel(data['Pilot 2']['Name'])
         self.pilot3 = QLabel(data['Pilot 3']['Name'])
@@ -265,7 +257,6 @@ class TeamInfo(QWidget):
         self.layout.addWidget(QLabel('Reserva'), 6, 1, Qt.AlignLeft)
         self.layout.addWidget(self.pilot3, 6, 2, Qt.AlignCenter)
         self.setLayout(self.layout)
-        self.setMaximumWidth(250)
 
     @Slot()
     def update_info(self, data: dict):

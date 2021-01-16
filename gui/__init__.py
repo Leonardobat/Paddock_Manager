@@ -3,9 +3,11 @@ from time import sleep
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import (QHeaderView, QHBoxLayout, QLabel, QPushButton,
-                               QWidget, QFrame, QGridLayout, QVBoxLayout)
+                               QWidget, QFrame, QHBoxLayout, QVBoxLayout,
+                               QSizePolicy, QGridLayout)
 from db import db
-from gui.boxes import CarInfo, TeamInfo, FinancialInfo, NewsInfo, RaceInfo, PilotBox, TimingBox
+from gui.boxes import (CarInfo, TeamInfo, FinancialInfo, NewsInfo, RaceInfo,
+                       PilotBox, TimingBox)
 from engine import Racing
 
 
@@ -44,15 +46,16 @@ class InterfacePrincipal(QWidget):
         self.racebox.race_button.clicked.connect(self.to_race)
 
         # Layout
-        self.grid = QGridLayout()
-        self.grid.addWidget(self.carbox, 0, 0, 1, 1)
-        self.grid.addWidget(self.teambox, 0, 1, 1, 1)
-        self.grid.addWidget(self.finanbox, 0, 2, 1, 1)
-        self.grid.addWidget(self.newsbox, 1, 0, 1, 2)
-        self.grid.addWidget(self.racebox, 1, 2)
-        self.grid.setRowStretch(0, 3)
-        self.grid.setRowStretch(1, 1)
-        self.setLayout(self.grid)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.finanbox)
+        self.layout.addWidget(self.carbox)
+        self.layout.addWidget(self.teambox)
+        self.right = QVBoxLayout()
+        self.right.addWidget(self.newsbox)
+        self.right.addWidget(self.racebox)
+        self.layout.addLayout(self.right)
+
+        self.setLayout(self.layout)
         self.setPalette(self.palette)
         self.setAutoFillBackground(True)
 
